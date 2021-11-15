@@ -1,5 +1,7 @@
 # INE5426 - Construção de Compiladores (rascunho)
 
+Documentaçao do PLY: https://www.dabeaz.com/ply/ply.html
+
 - acho que precisa de python >=3.5 para funcionar
 
 - dependencia: ply
