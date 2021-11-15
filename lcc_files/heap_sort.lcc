@@ -1,0 +1,107 @@
+def main() 
+{
+    int size = 10;
+    int heap[size];
+    int i;
+    int auxiliar;
+    print "insira 10 numeros";
+    for(i = 0; i<size; i = i + 1) {
+        read auxiliar
+        heap[i] = auxiliar;
+    }
+    heapSort(heap, size);
+    for(i = 0; i<size; i = i + 1) {
+        print heap[i];
+    }
+}
+def getPai(int i)
+{
+    int indexPai;
+    if (i % 2 == 1) {
+        indexPai = (i - 1) / 2;
+    }
+    else
+        indexPain = i / 2;
+    // return indexPai
+    return;
+}
+def getFilhoEsquerda(int i) 
+{
+    int ret;
+    int ret = i * 2;
+    return;
+}
+def getFilhoDireita(int i)
+{
+    int ret;
+    int ret = i * 2 + 1;
+    return;
+}
+def maxHeapify(int[] heap, int i, int tamanhoHeap)
+{
+    int l;
+    int r;
+    int maior;
+    int aux;
+    l = getFilhoEsquerda(i);
+    r = getFilhoDireita(i);
+    if (l <= tamanhoHeap) {
+        if (heap[l] > heap[i]) {
+            maior = l;
+        }
+        else
+            maior = i;
+    }
+    else
+        maior = i;
+
+    if (r <= tamanhoHeap) {
+        if (heap[r] > heap[maior]) {
+            maior = r;
+        }
+    }
+    if (maior != i) {
+        aux = heap[i];
+        heap[i] = heap[maior];
+        heap[maior] = heap[aux];
+        maxHeapify(heap, maior, tamanhoHeap);
+    }
+}
+def constroiHeap(int[] heap, int tamanhoHeap)
+{
+    int i;
+    int tamanhoHeapAjustado = tamanhoHeap;
+    if (tamanhoHeap % 2 == 1) {
+        tamanhoHeapAjustado = tamanhoHeap - 1;
+    }
+    for (i = tamanhoHeapAjustado/2; i >= 0; i = i + 1) {
+        maxHeapify(heap, i, tamanhoHeap);
+    }
+}
+def heapSort(int[] heap, int tamanhoHeap)
+{
+    int i;
+    int aux;
+    int tamanhoNovoHeap;
+
+    for (i = tamanhoHeap; i >= 1; i = i - 1) {
+        aux = heap[0];
+        heap[0] = heap[i];
+        heap[i] = aux;
+        tamanhoNovoHeap = tamanhoHeap - 1;
+        maxHeapify(heap, 0);
+    }
+}
+def heapExtractMax(int[] heap, int tamanhoHeap) 
+{
+    int max;
+    if (tamanhoHeap < 1) {
+        print "error, heap underflow";
+    }
+    max = heap[0];
+    heap[0] = heap[tamanhoHeap - 1];
+    tamanhoHeap = tamanhoHeap - 1;
+    maxHeapify(heap, 1, tamanhoHeap);
+    // return max
+    return
+}
