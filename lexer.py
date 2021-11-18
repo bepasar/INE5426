@@ -46,6 +46,7 @@ class Lexer(object):
 		'def' : 'def',
 		'return' : 'return',
 		'read' : 'read',
+		'print' : 'print',
 		'new' : 'new',
 		'null' : 'null',
 		'break' : 'break'
