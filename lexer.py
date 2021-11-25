@@ -1,22 +1,70 @@
 import ply.lex as lex
  
 class Lexer(object):
-
-	# Build the lexer
-	def build(self, **kwargs):
+	def __init__(self, **kwargs):
+		self.symbols_table = dict()
+		self.tokens_list = list()
 		self.lexer = lex.lex(module=self, **kwargs)
 	
 	# Tokenize (execute lexical analysis)
+	# on some data.
+	# 'data' (string containing the whole
+	# source code from a .lcc file)
 	def run(self, data):
 		self.lexer.input(data)
-		print(f"{'Line':<8}{'Column':<10}{'Token':<17}{'Lexeme':>8}")
-		while True:
-			tok = self.lexer.token()
-			if not tok or tok.type == 'error': 
-				break      # No more input (end of file)
+		lexical_error = False
+
+		# Tokenize the next lexeme until EOF
+		# or until an lexical error is found.
+		tok = self.lexer.token()
+		while tok:
+			# Lexical error identified
+			if tok.type == 'error':
+				lexical_error = True
+				break
+
 			col = self.find_column(tok)
-			print('%s%s%s%s' % (str(tok.lineno).ljust(8, ' '), str(col).ljust(10, ' '), tok.type.ljust(19, ' '), tok.value))
+
+			# Insert token instance in the tokens list
+			self.tokens_list.append((tok, col))
+
+			# Initialize/update the symbols table
+			if tok.type == 'ident':
+				if tok.value in self.symbols_table:
+					self.symbols_table[tok.value][0] += 1				# token occurrences counter
+					self.symbols_table[tok.value][1].add(tok.lineno)	# set of lines where token is present 
+				else:
+					self.symbols_table[tok.value] = [1, {tok.lineno}]
+
+			# Get next token
+			tok = self.lexer.token()
+
+		if not lexical_error:
+			self.print_symbols_table()
+			self.print_token_list()
 	
+
+	def print_token_list(self):
+		print("_______________________________TOKENS LIST________________________________")
+		print(f"{'Line':<8}{'Column':<10}{'Token':<17}{'Lexeme':>8}")
+		for (tok, col) in self.tokens_list:
+			print('%s%s%s%s' % (str(tok.lineno).ljust(8, ' '), str(col).ljust(10, ' '), tok.type.ljust(19, ' '), tok.value))
+		print("__________________________________________________________________________")
+
+	def print_symbols_table(self):
+		print("_______________________________SYMBOLS TABLE______________________________")
+		print(f"{'Identifier':20}{'Occurrences':16}{'Lines':10}")
+		for token, attrib in self.symbols_table.items():
+			lines = sorted(attrib[1])
+			print('%s%s' % (token.ljust(20, ' '), str(attrib[0]).ljust(15, ' ')), lines[:10])
+			i = 10
+			while i < (len(lines)):
+				print(''.ljust(35, ' '), lines[i:i+10])
+				i += 10
+			print()
+		print("__________________________________________________________________________")
+
+
 	# Basic regular definitions
 	digit  = r'([0-9])'
 	letter = r'([A-Za-z])'
@@ -24,7 +72,7 @@ class Lexer(object):
 	# Regular expression rules for non-trivial terminals
 	t_float_constant = digit + r'+\.' + digit + r'+'
 	t_int_constant = digit + r'+'
-	t_string_constant = r'\"([^\\\n]|(\\.))*?\"|\'([^\\\n]|(\\.))*?\'' # nao entendi bem como funciona essa exp regular
+	t_string_constant = r'".*" | \'.*\'' # '.' represents any character
 	t_relop = r'<|<=|>|>=|!=|=='
 
 	# A string containing ignored characters (spaces and tabs)
@@ -36,6 +84,7 @@ class Lexer(object):
 
 	# reserved keywords (specific cases of token 'ident')
 	reserved = {
+		'main' : 'main',
 		'if' : 'if',
 		'else' : 'else',
 		'while' : 'while',
@@ -73,16 +122,18 @@ class Lexer(object):
 		r'\n+'
 		t.lexer.lineno += len(t.value)
 
-	# ignore comments (?)
+	# ignore single line comments
 	def t_comment(self, t):
-		r'\//'
-		pass
-		# No return value. Token discarded
+		r'//.+'
+		pass # No return value -> Token discarded
 
 	# Error handling rule
 	def t_error(self, t):
 		col = self.find_column(t)
-		print("Illegal character '%s' at line %s, column %s" % (t.value[0], t.lineno, col))
+		line = self.lexer.lexdata.split('\n')[t.lineno - 1]
+		print(f"Lexical error!", end=" ")
+		print("Unexpected character '%s' at line %s, column %s:" % (t.value[0], t.lineno, col))
+		print(line[:col-1] + '\x1b[6;30;42m' + t.value[0] + '\x1b[0m' + line[col:]) # higlight the error
 		t.lexer.skip(1)
 		return t
 
