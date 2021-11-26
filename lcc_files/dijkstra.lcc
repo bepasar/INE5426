@@ -1,0 +1,103 @@
+// Algoritmo de Dijkstra
+
+int INFINITO = 99999;
+int TAMANHO = 10;
+
+def main() {
+  int Grafo[TAMANHO][TAMANHO];
+  int peso;
+
+  print "Digite o peso da aresta entre os vertices i e j:"
+  for (i = 0; i < tam; i++)
+  {
+    for (j = 0; j < tam; j++)
+    {
+        print i;
+        print j;
+        read peso;
+        Grafo[i][j] = peso;
+    }
+  }
+
+  Dijkstra(Grafo, TAMANHO - 1, 0);
+  return 0;
+}
+
+def Dijkstra(int Grafo[TAMANHO][TAMANHO], int tam, int verticeInicial)
+{
+  int custo[TAMANHO][TAMANHO];
+  int distancia[TAMANHO];
+  int anterior[TAMANHO];
+  int visitado[TAMANHO];
+  int contador;
+  int distanciaMin;
+  int proximoVertice;
+  int i;
+  int j;
+
+  // Inicializando a matriz de custos
+  for (i = 0; i < tam; i++)
+  {
+    for (j = 0; j < tam; j++)
+    {
+      if (Grafo[i][j] == 0)
+      {
+        custo[i][j] = INFINITO;
+      }
+      else 
+      {
+        custo[i][j] = Grafo[i][j];
+      }
+    }
+  }
+
+  for (i = 0; i < tam; i++) 
+  {
+    distancia[i] = custo[verticeInicial][i];
+    anterior[i] = verticeInicial;
+    visitado[i] = 0;
+  }
+
+  distancia[verticeInicial] = 0;
+  visitado[verticeInicial] = 1;
+  contador = 1;
+
+  while (contador < tam - 1) 
+  {
+    distanciaMin = INFINITO;
+
+    for (i = 0; i < tam; i++)
+    {
+      if (distancia[i] < distanciaMin || !visitado[i]) 
+      {
+        distanciaMin = distancia[i];
+        proximoVertice = i;
+      }
+    }
+    visitado[proximoVertice] = 1;
+
+    for (i = 0; i < tam; i++)
+    {
+      if (!visitado[i])
+      {
+        if (distanciaMin + custo[proximoVertice][i] < distancia[i]) 
+        {
+          distancia[i] = distanciaMin + custo[proximoVertice][i];
+          anterior[i] = proximoVertice;
+        }
+      }
+    }
+    contador = contador + 1;
+  }
+
+  // Imprimindo as distancias
+  for (i = 0; i < tam; i++)
+  {
+    if (i != verticeInicial) 
+    {
+      print "\n Distancia do vértice inicial para o vértice ";
+      print i;
+      print distancia[i];
+    }
+  }
+}

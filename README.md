@@ -14,7 +14,7 @@ Programa que gera um analisador lexico para a linguagem CC-2021-2, utilizando o 
     - Windows:  python main.py 'arquivo.lcc'
     - Linux:    python3 main.py 'arquivo.lcc'
 
-A saída do programa consiste no resultado da análise léxica, a aqul é apresentado no próprio terminal, através de prints. Dois cenários são possíveis:
+A saída do programa consiste no resultado da análise léxica, a qual é apresentado no próprio terminal, através de prints. Dois cenários são possíveis:
 
 - Caso um erro léxico seja identificado, a análise é interrompida, e como saída serão apresentados o    caractere que gerou o erro, a linha e a coluna onde o mesmo se encontra no código fonte, e também uma cópia desta linha, destacando o caractere de forma colorida, para facilitar sua localização.
 

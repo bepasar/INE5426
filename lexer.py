@@ -73,7 +73,9 @@ class Lexer(object):
 	t_float_constant = digit + r'+\.' + digit + r'+'
 	t_int_constant = digit + r'+'
 	t_string_constant = r'".*" | \'.*\'' # '.' represents any character
+	
 	t_relop = r'<|<=|>|>=|!=|=='
+	t_boolop = r'!|&&|[||]'
 
 	# A string containing ignored characters (spaces and tabs)
 	t_ignore  = ' \t'
@@ -105,6 +107,7 @@ class Lexer(object):
 	tokens = [
 		'ident',
 		'relop',
+		'boolop',
 		'string_constant',
 		'float_constant',
 		'int_constant'
