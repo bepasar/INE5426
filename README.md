@@ -9,8 +9,8 @@ Documentaçao do PLY: https://www.dabeaz.com/ply/ply.html
     - ou tambem: pip install -r requirements.txt
 
 - executar:
-    - Windows:  python main.py 'arquivo.lcc'
-    - Linux:    python3 main.py 'arquivo.lcc'
+    - make FILE='nome do arquivo' run
+    - ex.: make FILE=lcc_files/heap_sort run 
 
 por enquanto esta gerando como saida somente a lista de tokens, contendo linha, coluna, tipo do token e lexema do token
 
