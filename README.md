@@ -10,9 +10,15 @@ Programa que gera um analisador lexico para a linguagem CC-2021-2, utilizando o 
     - pip install ply
     - ou tambem: pip install -r requirements.txt
 
+<<<<<<< HEAD
 - Executação:
     - Windows:  python main.py 'arquivo.lcc'
     - Linux:    python3 main.py 'arquivo.lcc'
+=======
+- executar:
+    - make FILE='nome do arquivo' run
+    - ex.: make FILE=lcc_files/heap_sort run 
+>>>>>>> e91eb96 (makefile feito)
 
 A saída do programa consiste no resultado da análise léxica, a qual é apresentado no próprio terminal, através de prints. Dois cenários são possíveis:
 
