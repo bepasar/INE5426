@@ -46,22 +46,22 @@ class Lexer(object):
 
 	def print_token_list(self):
 		print("_______________________________TOKENS LIST________________________________")
-		print(f"{'Line':<8}{'Column':<10}{'Token':<17}{'Lexeme':>8}")
+		print('Line'.ljust(8, ' ') + 'Column'.ljust(10, ' ') + 'Token'.ljust(19, ' ') + 'Lexeme'.ljust(8, ' '))
 		for (tok, col) in self.tokens_list:
 			print('%s%s%s%s' % (str(tok.lineno).ljust(8, ' '), str(col).ljust(10, ' '), tok.type.ljust(19, ' '), tok.value))
 		print("__________________________________________________________________________")
 
 	def print_symbols_table(self):
 		print("_______________________________SYMBOLS TABLE______________________________")
-		print(f"{'Identifier':20}{'Occurrences':16}{'Lines':10}")
+		print('Identifier'.ljust(20, ' ') + 'Occurrences'.ljust(16, ' ') + 'Lines')
 		for token, attrib in self.symbols_table.items():
 			lines = sorted(attrib[1])
-			print('%s%s' % (token.ljust(20, ' '), str(attrib[0]).ljust(15, ' ')), lines[:10])
+			print('%s%s' % (token.ljust(20, ' '), str(attrib[0]).ljust(16, ' ')) + str(lines[:10]))
 			i = 10
 			while i < (len(lines)):
-				print(''.ljust(35, ' '), lines[i:i+10])
+				print(''.ljust(36, ' ') + str(lines[i:i+10]))
 				i += 10
-			print()
+			print('')
 		print("__________________________________________________________________________")
 
 
@@ -134,8 +134,7 @@ class Lexer(object):
 	def t_error(self, t):
 		col = self.find_column(t)
 		line = self.lexer.lexdata.split('\n')[t.lineno - 1]
-		print(f"Lexical error!", end=" ")
-		print("Unexpected character '%s' at line %s, column %s:" % (t.value[0], t.lineno, col))
+		print("Lexical error! Unexpected character '%s' at line %s, column %s:" % (t.value[0], t.lineno, col))
 		print(line[:col-1] + '\x1b[6;30;42m' + t.value[0] + '\x1b[0m' + line[col:]) # higlight the error
 		t.lexer.skip(1)
 		return t
