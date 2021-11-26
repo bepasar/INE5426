@@ -124,7 +124,7 @@ class Lexer(object):
 
 	# ignore single line comments
 	def t_comment(self, t):
-		r'//.+'
+		r'//.*'
 		pass # No return value -> Token discarded
 
 	# Error handling rule
