@@ -21,7 +21,7 @@ def getPai(int i)
         indexPai = (i - 1) / 2;
     }
     else
-        indexPain = i / 2;
+        indexPai = i / 2;
     // return indexPai
     return;
 }

@@ -5,14 +5,14 @@ from lexer import Lexer
 def main():
     # Open and read file
     filename = sys.argv[1]
-    print (filename)
     f = open(filename, 'r')
     f_contents = f.read()
     f.close()
 
-    # Build the lexer and try it out
+    # Build the lexer
     lex = Lexer()
-    lex.build()
+
+    # Execute the lexical analysis
     lex.run(f_contents)
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-250 + 2.66 != 55.33;
-string a = "..asdjasz\32\\n";
-if (a >= b);
-int c = d;
+float c = + 2.66 * 55.33;
+string a = '..asdjasz\32\\n';
+// *** comment <--
+if (a >= c + b)
