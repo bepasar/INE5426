@@ -6,7 +6,7 @@ def main()
     int auxiliar;
     print "insira 10 numeros";
     for(i = 0; i<size; i = i + 1) {
-        read auxiliar
+        read auxiliar;
         heap[i] = auxiliar;
     }
     heapSort(heap, size);

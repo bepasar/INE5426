@@ -1,0 +1,100 @@
+int grid;
+grid = new int[81];
+
+def checkrow(int row,int num)
+{
+  int column;
+  for(column=0;column<9;column++)
+  {
+    if(grid[row*size+column]==num)
+        return 0 ;
+  }
+    return 1;
+}
+def checkcolumn(int column,int num)
+{
+  int row;
+  for(row=0;row<9;row++)
+  {
+    if(grid[row*size+column]==num)
+        return 0;
+  }
+return 1;
+}
+def checkgrid(int row,int column,int num)
+{
+  row=(row/3)*3 ;
+  column=(column/3)*3;
+  int i;
+  int j;
+  for(i=0;i<3;i++)
+  {
+    for(j=0;j<3;j++)
+    {
+      if(grid[(row+i)*size+column+j]==num)
+         return 0;
+    }
+  }
+return 1;
+}
+def solve(int row,int column)
+{
+if(column<8)
+        solvesudoku(row,column+1);
+    else
+       solvesudoku(row+1,0);
+}
+def display()
+{
+  int row;
+  int column;
+  print "RESOLVIDO";
+  for(row=0;row<9;row++)
+  {
+    for(column=0;column<9;column++)
+    {
+      printf grid[row*size+column];
+    }
+    print "\n";
+  }
+}
+void solvesudoku(int row,int column)
+{
+    if(row>8)
+    display();
+    if(grid[row][column]!=0)
+      solve(row,column);
+    else
+    {
+        int counter;
+        for(counter=1;counter<=9;counter++)
+        {
+        if((checkrow(row,ctr)==1)&&(checkcolumn(column,ctr)==1)&&(checkgrid(row,column,ctr)==1))
+        {
+            grid[row][column]=ctr;
+             solve(row,column);
+        }
+        }
+        grid[row][column]=0;
+    }
+
+}
+def main()
+{
+int row
+int column;
+print "Preencha os espaços com números entre 1-9 ou 0 para desconhecidos";
+
+int value;
+
+for(row=0;row<9;row++)
+{
+  for(column=0;column<9;column++)
+  {
+    read value;
+    grid[row*size+column] = value;
+  }
+}
+
+solvesudoku(0,0);
+}
