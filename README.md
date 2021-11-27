@@ -1,7 +1,7 @@
-[comment]: # Grupo: Bernardo, Klaus e Tiago
+
 
 # INE5426 - Construção de Compiladores
-
+## Grupo: Bernardo, Klaus e Tiago
 ## Trabalho 1 - Analisador Léxico
 
 Programa que gera um analisador lexico para a linguagem CC-2021-2, utilizando o módulo lex da ferramenta PLY. As definições e expressões regulares elaboradas utilizam o módulo re, para expressões regulares em python.
