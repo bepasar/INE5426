@@ -1,3 +1,5 @@
+# Grupo: Bernardo, Klaus e Tiago
+
 import sys
 import ply.lex as lex
 from lexer import Lexer

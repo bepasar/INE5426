@@ -1,3 +1,5 @@
+# Grupo: Bernardo, Klaus e Tiago
+
 import ply.lex as lex
  
 class Lexer(object):

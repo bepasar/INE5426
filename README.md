@@ -1,3 +1,5 @@
+[comment]: # Grupo: Bernardo, Klaus e Tiago
+
 # INE5426 - Construção de Compiladores
 
 ## Trabalho 1 - Analisador Léxico
@@ -6,13 +8,17 @@ Programa que gera um analisador lexico para a linguagem CC-2021-2, utilizando o 
 
 - Documentaçao do PLY: https://www.dabeaz.com/ply/ply.html
 
-- Dependencias: ply (utilizamos a versão 3.11)
-    - pip install ply
-    - ou tambem: pip install -r requirements.txt
+- Versões do Python testadas:
+    - 3.6.9
+    - 3.8.10 
 
-- executar:
+- Para instalar as dependencias:
+    - make setup
+    - ou: pip install -r requirements.txt
+
+- Executar:
     - make FILE='nome do arquivo' run
-    - ex.: make FILE=lcc_files/heap_sort run 
+    - ex.: make FILE=lcc_files/heap_sort.lcc run 
 
 A saída do programa consiste no resultado da análise léxica, a qual é apresentado no próprio terminal, através de prints. Dois cenários são possíveis:
 
