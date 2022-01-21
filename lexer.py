@@ -2,6 +2,34 @@
 
 import ply.lex as lex
  
+
+reserved = {
+		'main' : 'main',
+		'if' : 'if',
+		'else' : 'else',
+		'while' : 'while',
+		'for' : 'for',
+		'int' : 'int',
+		'float' : 'float',
+		'string' : 'string',
+		'def' : 'def',
+		'return' : 'return',
+		'read' : 'read',
+		'print' : 'print',
+		'new' : 'new',
+		'null' : 'null',
+		'break' : 'break'
+	}
+
+tokens = [
+		'ident',
+		'relop',
+		'boolop',
+		'string_constant',
+		'float_constant',
+		'int_constant'
+	] + list(reserved.values())
+	
 class Lexer(object):
 	def __init__(self, **kwargs):
 		self.symbols_table = dict()
@@ -86,7 +114,6 @@ class Lexer(object):
 	# the token type/value is the character itself
 	literals = ['+', '-', '*', '/', '%', ',', ';', '=', '(', ')', '[', ']', '{', '}']
 
-	# reserved keywords (specific cases of token 'ident')
 	reserved = {
 		'main' : 'main',
 		'if' : 'if',
@@ -105,7 +132,6 @@ class Lexer(object):
 		'break' : 'break'
 	}
 
-	# List of token names. (This is always required)
 	tokens = [
 		'ident',
 		'relop',
@@ -114,7 +140,6 @@ class Lexer(object):
 		'float_constant',
 		'int_constant'
 	] + list(reserved.values())
-
 
 	identifier = r'(' + letter + r'(' + digit + r'|' + letter + r')*)'
 	@lex.TOKEN(identifier)
