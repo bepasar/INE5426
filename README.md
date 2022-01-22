@@ -29,3 +29,8 @@ A saída do programa consiste no resultado da análise léxica, a qual é aprese
 A tabela de símbolos lista todos os tokens identificadores encontrados, e como atributos, são mostradas a quantidade de ocorrências e uma lista contendo os números das linhas em que estão presentes.
 
 A lista de tokens apresenta todos os tokens e seus respectivos lexemas, assim como a linha e coluna em que se encontram, seguindo a ordem em que foram lidos do código fonte (do início ao fim). 
+
+## Sintatic
+
+para rodar o analisador sintatico: python sintatic.py
+insira um input e aperte enter
