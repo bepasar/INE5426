@@ -30,6 +30,8 @@ tokens = [
 		'int_constant'
 	] + list(reserved.values())
 	
+literals = ['+', '-', '*', '/', '%', ',', ';', '=', '(', ')', '[', ']', '{', '}']
+
 class Lexer(object):
 	def __init__(self, **kwargs):
 		self.symbols_table = dict()
