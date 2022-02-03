@@ -1,6 +1,7 @@
-import ply.yacc as yacc
+# Grupo: Bernardo, Klaus e Tiago
 
-from lexer import tokens
+import logging
+import ply.yacc as yacc
 
 def p_program(p):
 	'''
@@ -174,32 +175,6 @@ def p_paramlistcall_simple(p):
 	'''
 	p[0] = ' '.join(p[1:])
 
-def p_error(p):
-	print("Syntax error in input!")
-
-def p_expression_relop(p):
-    'expression : numexpression relop numexpression'
-    p[0] = p[1]
-
-def p_funcall(p):
-    '''funcall : ident '(' paramlistcall ')' '''
-    p[0] = p[1] + p[2] + p[3] + p[4]
-
-def p_paramlistcall_recursive(p):
-    '''paramlistcall : ident ',' paramlistcall'''
-    p[0] = p[1] + p[2] + p[3]
-
-def p_paramlistcall_empty(p):
-    'paramlistcall : empty'
-    p[0] = p[1]
-
-def p_paramlistcall_simple(p):
-    '''paramlistcall : ident ',' ident'''
-    p[0] = p[1] + ',' + p[2]
-
-def p_error(p):
-    print("Syntax error in input!")
-
 def p_numexpression_term(p):
 	'''
 	numexpression : term
@@ -214,7 +189,9 @@ def p_numexpression_recursion(p):
 	p[0] = ' '.join(p[1:])
 
 def p_term(p):
-	'''term : unaryexpression'''
+	'''
+	term : unaryexpression
+	'''
 	p[0] = p[1]
 
 def p_term_recursion(p):
@@ -236,7 +213,7 @@ def p_unaryexpression_signaled(p):
 	unaryexpression : '+' factor
 					| '-' factor
 	'''
-	p[0] = p[1] + p[2]
+	p[0] = ' '.join(p[1:])
 
 def p_factor(p):
 	'''
@@ -258,7 +235,6 @@ def p_allocexpression(p):
 					| new float '[' numexpression ']' dimensions
 					| new string '[' numexpression ']' dimensions
 	'''
-	# p[0] = p[1] + p[2] + '[' + p[4] + ']' + p[6]
 	p[0] = ' '.join(p[1:])
 
 def p_dimensions_empty(p):
@@ -271,7 +247,6 @@ def p_dimensions(p):
 	'''
 	dimensions : '[' numexpression ']'
 	'''
-	# p[0] = p[1] + p[2] + p[3]
 	p[0] = ' '.join(p[1:])
 
 def p_empty(p):
@@ -280,22 +255,23 @@ def p_empty(p):
 	'''
 	pass
 
+def p_error(p):
+	print("Syntax error in input!")
+
 # Build yacc's LALR parsing table
 # and save it at parsetab.py
-def make_parser():
+def build_parser(tokens): # DONT REMOVE tokens
 	parser = yacc.yacc()
 	return parser
 
-# lex = Lexer()
-# parser = yacc.yacc()
+# Config logfile for debugging info output
+logging.basicConfig(
+	level = logging.DEBUG,
+	filename = "parselog.txt",
+	filemode = "w",
+	format = "%(message)s"
+)
 
-# while True:
-#     try:
-#         s = input('sintatic>')
-#         print(s)
-#     except EOFError:
-#         break
-#     if not s: continue
-#     result = parser.parse(input=s, debug=True)
-#     print(result)
-	
+# Parse code from a file
+def run(parser, file):
+	return parser.parse(input=file, debug=logging.getLogger())

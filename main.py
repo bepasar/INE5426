@@ -13,16 +13,14 @@ def main():
 
     # Build the lexer and parser
     lex = Lexer()
-    parser = sintatic.make_parser()
-    # parser = Parser()
+    parser = sintatic.build_parser(lex.get_tokens())
 
     # Execute the lexical analysis
     lex_error = lex.run(f_contents)
 
     # Execute the parsing
-    # parser.run(f_contents)
     if not lex_error:
-        result = parser.parse(input=f_contents, debug=True)
+        result = sintatic.run(parser, f_contents)
         print(result)
 
 
