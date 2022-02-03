@@ -3,6 +3,7 @@
 # PLY yacc
 parsetab.py
 parser.out
+parselog.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

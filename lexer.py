@@ -1,35 +1,6 @@
 # Grupo: Bernardo, Klaus e Tiago
 
 import ply.lex as lex
- 
-
-reserved = {
-		'if' : 'if',
-		'else' : 'else',
-		'while' : 'while',
-		'for' : 'for',
-		'int' : 'int',
-		'float' : 'float',
-		'string' : 'string',
-		'def' : 'def',
-		'return' : 'return',
-		'read' : 'read',
-		'print' : 'print',
-		'new' : 'new',
-		'null' : 'null',
-		'break' : 'break'
-	}
-
-tokens = [
-		'ident',
-		'relop',
-		'boolop',
-		'string_constant',
-		'float_constant',
-		'int_constant'
-	] + list(reserved.values())
-	
-literals = ['+', '-', '*', '/', '%', ',', ';', '=', '(', ')', '[', ']', '{', '}']
 
 class Lexer(object):
 	def __init__(self, **kwargs):
@@ -172,3 +143,7 @@ class Lexer(object):
 		input = self.lexer.lexdata
 		line_start = input.rfind('\n', 0, token.lexpos) + 1
 		return (token.lexpos - line_start) + 1
+
+	# Tokens getter (for the parser)
+	def get_tokens(self):
+		return self.tokens
