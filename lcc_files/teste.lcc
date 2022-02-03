@@ -1,4 +1,23 @@
-float c = + 2.66 * 55.33;
-string a = '..asdjasz\32\\n';
-// *** comment <--
-if (a >= c + b)
+// obs1: tudo precisa estar dentro de funcao nessa linguagem!
+// pois a gramatica nao prevê declaraçoes globais
+
+// obs2: gramatica tbm nao preve instanciaçao de variaveis inicializadas, por ex:
+//      float c = 2.66 * 55.33;
+// então é necessario quebrar a instanciaçao e inicializacao:
+//      float c;
+//      c = 2.66 * 55.33;
+// OU mudar a gramatica kkk
+
+def testeFunc() {
+    float c;
+    c = 2.66 * 55.33;
+
+    string a;
+    a = '..asdjasz\32\\n';
+
+    // *** comment <--
+    if (a >= c + b) {
+        c = 0;
+    }
+    return;
+}

@@ -4,7 +4,6 @@ import ply.lex as lex
  
 
 reserved = {
-		'main' : 'main',
 		'if' : 'if',
 		'else' : 'else',
 		'while' : 'while',
@@ -71,9 +70,10 @@ class Lexer(object):
 			# Get next token
 			tok = self.lexer.token()
 
-		if not lexical_error:
-			self.print_symbols_table()
-			self.print_token_list()
+		# if not lexical_error:
+		# 	self.print_symbols_table()
+		# 	self.print_token_list()
+		return lexical_error
 	
 
 	def print_token_list(self):
@@ -106,7 +106,7 @@ class Lexer(object):
 	t_int_constant = digit + r'+'
 	t_string_constant = r'".*" | \'.*\'' # '.' represents any character
 	
-	t_relop = r'<|<=|>|>=|!=|=='
+	t_relop = r'<=|>=|!=|==|<|>'
 	t_boolop = r'!|&&|[||]'
 
 	# A string containing ignored characters (spaces and tabs)
@@ -117,7 +117,6 @@ class Lexer(object):
 	literals = ['+', '-', '*', '/', '%', ',', ';', '=', '(', ')', '[', ']', '{', '}']
 
 	reserved = {
-		'main' : 'main',
 		'if' : 'if',
 		'else' : 'else',
 		'while' : 'while',
