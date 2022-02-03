@@ -32,5 +32,5 @@ A lista de tokens apresenta todos os tokens e seus respectivos lexemas, assim co
 
 ## Sintatic
 
-para rodar o analisador sintatico: python sintatic.py
-insira um input e aperte enter
+(rascunho)
+Alterei para executar da forma como descrito acima mesmo. Primeiro vai realizar a analise lexica, e caso não tenha erros lexicos faz a sintatica.
