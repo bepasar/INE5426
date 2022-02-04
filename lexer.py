@@ -78,7 +78,7 @@ class Lexer(object):
 	t_string_constant = r'".*" | \'.*\'' # '.' represents any character
 	
 	t_relop = r'<=|>=|!=|==|<|>'
-	t_boolop = r'!|&&|[||]'
+	t_boolop = r'&&|\|\|' # not '!' operator removed
 
 	# A string containing ignored characters (spaces and tabs)
 	t_ignore  = ' \t'

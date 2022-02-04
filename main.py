@@ -18,11 +18,16 @@ def main():
     # Execute the lexical analysis
     lex_error = lex.run(f_contents)
 
-    # Execute the parsing
     if not lex_error:
-        result = sintatic.run(parser, f_contents)
-        print(result)
+        print('Lexical SUCCESS! No lexical errors were found!')
+        lex.lexer.lineno = 1 # restart line counter after lexical analysis
 
+        # Execute the parsing
+        parsing_result = sintatic.run(parser, f_contents)
+        print(parsing_result[-1], f_contents[-1])
+        if parsing_result is not None and parsing_result[-1] == f_contents[-1]: # TODO: ver uma forma melhor de validar esse teste
+            print('Parsing SUCCESS! No syntax errors were found!')
+            
 
 if __name__ == '__main__':
     main()
