@@ -1,6 +1,7 @@
 def main() 
 {
-    int size = 10;
+    int size;
+    size = 10;
     int heap[size];
     int i;
     int auxiliar;
@@ -28,13 +29,13 @@ def getPai(int i)
 def getFilhoEsquerda(int i) 
 {
     int ret;
-    int ret = i * 2;
+    ret = i * 2;
     return;
 }
 def getFilhoDireita(int i)
 {
     int ret;
-    int ret = i * 2 + 1;
+    ret = i * 2 + 1;
     return;
 }
 def maxHeapify(int[] heap, int i, int tamanhoHeap)
@@ -70,7 +71,8 @@ def maxHeapify(int[] heap, int i, int tamanhoHeap)
 def constroiHeap(int[] heap, int tamanhoHeap)
 {
     int i;
-    int tamanhoHeapAjustado = tamanhoHeap;
+    int tamanhoHeapAjustado;
+    tamanhoHeapAjustado = tamanhoHeap;
     if (tamanhoHeap % 2 == 1) {
         tamanhoHeapAjustado = tamanhoHeap - 1;
     }
@@ -103,5 +105,5 @@ def heapExtractMax(int[] heap, int tamanhoHeap)
     tamanhoHeap = tamanhoHeap - 1;
     maxHeapify(heap, 1, tamanhoHeap);
     // return max
-    return
+    return;
 }

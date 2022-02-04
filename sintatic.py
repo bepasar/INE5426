@@ -29,36 +29,56 @@ def p_funcdef(p):
 	'''
 	p[0] = ' '.join(p[1:])
 
+# New rule for passing arrays as function parameters
+def p_arr_param(p):
+	'''
+	arrparam 	: int '[' ']'
+				| float '[' ']'
+				| string '[' ']'
+				| arrparam '[' ']'
+				| arrparam ident
+	'''
+	p[0] = ' '.join(p[1:])
+
+# New production for 'arr_param'
 def p_paramlist_simple(p):
 	'''
 	paramlist 	: int ident
 				| float ident
 				| string ident
+				| arrparam
 				| empty 
 	'''
-	if len(p) == 3:
-		p[0] = p[1] + p[2]
+	if p[1] is None:
+		p[0] = ' ' # empty
 	else:
-		p[0] = '' # '' to avoid creating a None object when produciton is empty
+		p[0] = ' '.join(p[1:])
 
+# New production for 'arr_param'
 def p_paramlist_complex(p):
 	'''
 	paramlist 	: int ident ',' paramlist
 				| float ident ',' paramlist
 				| string ident ',' paramlist
+				| arrparam ',' paramlist
 	'''
 	p[0] = ' '.join(p[1:])
 
-
+# New productions
+# funcall ';' --> enable function calling without return. ex: heapsort(x,y)
+# | whilestat --> addition of 'while' statement to the language
+# removed '| ;' production because it enable ';;;;'... to be valid
 def p_statement_vardecl(p):
 	'''
 	statement 	: vardecl ';'
+				| funcall ';'
 				| atribstat ';'
 				| printstat ';'
 				| readstat ';'
 				| returnstat ';'
 				| ifstat
 				| forstat
+				| whilestat
 				| '{' statelist '}' 
 				| break ';'
 				| ';'
@@ -73,6 +93,8 @@ def p_vardecl(p):
 	vardecl : int ident 
 			| float ident
 			| string ident
+			| vardecl '[' int_constant ']'
+			| vardecl '[' ident ']'
 	'''
 	p[0] = ' '.join(p[1:])
 
@@ -96,11 +118,13 @@ def p_readstat(p):
 	'''
 	p[0] = p[1] + p[2]
 
+# New production to allow return values (ex 'return 2;')
 def p_returnstat(p):
 	'''
-	returnstat : return
+	returnstat 	: return
+				| return factor
 	'''
-	p[0] = p[1]
+	p[0] = ' '.join(p[1:])
 
 def p_ifstat(p):
 	'''
@@ -120,24 +144,36 @@ def p_forstat(p):
 	'''
 	p[0] = ' '.join(p[1:])
 
-def p_statelist_simple(p):
+# New rule for while statement
+def p_whilestat(p):
 	'''
-	statelist : statement
-	'''
-	p[0] = p[1]
-
-def p_statelist(p):
-	'''
-	statelist : statement statelist
+	whilestat : while '(' expression ')' statement
 	'''
 	p[0] = ' '.join(p[1:])
 
-# missing ([numexpression])*
+def p_statelist(p):
+	'''
+	statelist 	: statement
+				| statement statelist
+	'''
+	p[0] = ' '.join(p[1:])
+
 def p_lvalue(p): 
 	'''
-	lvalue : ident
+	lvalue 	: ident
+			| ident arr
 	''' 
-	p[0] = p[1]
+	p[0] = ' '.join(p[1:])
+
+# New rule, to solve ([numexpression])* problem
+def p_lvalue_array(p):
+	'''
+	arr : '[' ']' 
+		| '[' numexpression ']'
+		| arr '[' ']'
+		| arr '[' numexpression ']'
+	'''
+	p[0] = ' '.join(p[1:])
 
 def p_expression(p):
 	'''
@@ -149,7 +185,14 @@ def p_expression_relop(p):
 	'''
 	expression : numexpression relop numexpression
 	'''
-	p[0] = p[1]
+	p[0] = ' '.join(p[1:])
+
+# New rule for boolean expressions
+def p_expression_boolop(p):
+	'''
+	expression : expression boolop expression
+	'''
+	p[0] = ' '.join(p[1:])
 
 def p_funcall(p):
 	'''
@@ -157,21 +200,28 @@ def p_funcall(p):
 	'''
 	p[0] = ' '.join(p[1:])
 
-def p_paramlistcall_recursive(p):
+# Separate rule for single parameters, for better organization
+# New productions: 
+# 	float/int constant and funcall now can be used as parameters.
+# 	ex: a = func(a, 2.5, 'acc', mult(5), 2)
+def p_param(p):
 	'''
-	paramlistcall : ident ',' paramlistcall
+	param 	: empty
+			| ident
+			| int_constant
+			| float_constant
+			| string_constant
+			| funcall
 	'''
-	p[0] = ' '.join(p[1:])
-
-def p_paramlistcall_empty(p):
+	if p[1] is None: # empty
+		p[0] = ' '
+	else:
+		p[0] = ' '.join(p[1:])
+		
+def p_paramlistcall(p):
 	'''
-	paramlistcall : empty
-	'''
-	p[0] = p[1]
-
-def p_paramlistcall_simple(p):
-	'''
-	paramlistcall : ident ',' ident
+	paramlistcall 	: param
+					| param ',' paramlistcall
 	'''
 	p[0] = ' '.join(p[1:])
 
@@ -190,13 +240,8 @@ def p_numexpression_recursion(p):
 
 def p_term(p):
 	'''
-	term : unaryexpression
-	'''
-	p[0] = p[1]
-
-def p_term_recursion(p):
-	'''
-	term 	: unaryexpression '*' unaryexpression
+	term 	: unaryexpression
+			| unaryexpression '*' unaryexpression
 			| unaryexpression '/' unaryexpression
 			| unaryexpression '%' unaryexpression
 	'''
@@ -224,10 +269,7 @@ def p_factor(p):
 			| lvalue
 			| '(' numexpression ')'
 	'''
-	if p[1] != '(':
-		p[0] = str(p[1])
-	else:
-		p[0] = ' '.join(p[1:])
+	p[0] = ' '.join(p[1:])
 
 def p_allocexpression(p):
 	'''
@@ -241,7 +283,7 @@ def p_dimensions_empty(p):
 	'''
 	dimensions : empty
 	'''
-	p[0] = p[1]
+	p[0] = ' '
 
 def p_dimensions(p):
 	'''
@@ -256,7 +298,10 @@ def p_empty(p):
 	pass
 
 def p_error(p):
-	print("Syntax error in input!")
+	if p:
+		print("Syntax error at token '" + p.value + "' at line", p.lineno)
+	else:
+		print("Syntax error at EOF. Please check parselog.txt file to pinpoint the error")
 
 # Build yacc's LALR parsing table
 # and save it at parsetab.py

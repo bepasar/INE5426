@@ -1,16 +1,20 @@
 // Algoritmo de Dijkstra
 
-int INFINITO = 99999;
-int TAMANHO = 10;
+def constantes() 
+{
+  int INFINITO; INFINITO = 99999;
+  int TAMANHO; TAMANHO = 10;
+}
 
-def main() {
+def main() 
+{
   int Grafo[TAMANHO][TAMANHO];
   int peso;
 
-  print "Digite o peso da aresta entre os vertices i e j:"
-  for (i = 0; i < tam; i++)
+  print "Digite o peso da aresta entre os vertices i e j: ";
+  for (i = 0; i < tam; i = i + 1)
   {
-    for (j = 0; j < tam; j++)
+    for (j = 0; j < tam; j = j + 1)
     {
         print i;
         print j;
@@ -18,12 +22,13 @@ def main() {
         Grafo[i][j] = peso;
     }
   }
-
-  Dijkstra(Grafo, TAMANHO - 1, 0);
+  int tam;
+  tam = TAMANHO - 1;
+  Dijkstra(Grafo, tam, 0);
   return 0;
 }
 
-def Dijkstra(int Grafo[TAMANHO][TAMANHO], int tam, int verticeInicial)
+def Dijkstra(int[][] Grafo, int tam, int verticeInicial)
 {
   int custo[TAMANHO][TAMANHO];
   int distancia[TAMANHO];
@@ -36,9 +41,9 @@ def Dijkstra(int Grafo[TAMANHO][TAMANHO], int tam, int verticeInicial)
   int j;
 
   // Inicializando a matriz de custos
-  for (i = 0; i < tam; i++)
+  for (i = 0; i < tam; i = i + 1)
   {
-    for (j = 0; j < tam; j++)
+    for (j = 0; j < tam; j = j + 1)
     {
       if (Grafo[i][j] == 0)
       {
@@ -51,7 +56,7 @@ def Dijkstra(int Grafo[TAMANHO][TAMANHO], int tam, int verticeInicial)
     }
   }
 
-  for (i = 0; i < tam; i++) 
+  for (i = 0; i < tam; i = i + 1) 
   {
     distancia[i] = custo[verticeInicial][i];
     anterior[i] = verticeInicial;
@@ -66,9 +71,9 @@ def Dijkstra(int Grafo[TAMANHO][TAMANHO], int tam, int verticeInicial)
   {
     distanciaMin = INFINITO;
 
-    for (i = 0; i < tam; i++)
+    for (i = 0; i < tam; i = i + 1)
     {
-      if (distancia[i] < distanciaMin || !visitado[i]) 
+      if (distancia[i] < distanciaMin || visitado[i] == false) 
       {
         distanciaMin = distancia[i];
         proximoVertice = i;
@@ -76,9 +81,9 @@ def Dijkstra(int Grafo[TAMANHO][TAMANHO], int tam, int verticeInicial)
     }
     visitado[proximoVertice] = 1;
 
-    for (i = 0; i < tam; i++)
+    for (i = 0; i < tam; i = i + 1)
     {
-      if (!visitado[i])
+      if (visitado[i] == false)
       {
         if (distanciaMin + custo[proximoVertice][i] < distancia[i]) 
         {
@@ -91,7 +96,7 @@ def Dijkstra(int Grafo[TAMANHO][TAMANHO], int tam, int verticeInicial)
   }
 
   // Imprimindo as distancias
-  for (i = 0; i < tam; i++)
+  for (i = 0; i < tam; i = i + 1)
   {
     if (i != verticeInicial) 
     {
