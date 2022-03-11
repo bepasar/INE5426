@@ -1,7 +1,45 @@
 # Grupo: Bernardo, Klaus e Tiago
 
+from cProfile import label
+from doctest import OutputChecker
 import logging
+from symtable import Symbol
+from turtle import left
 import ply.yacc as yacc
+import pprint
+
+# data structures
+class Node():
+	def __init__(self, label, left, right) -> None:
+		self.label = label
+		self.left = left
+		self.right = right
+
+class Scope():
+	def __init__(self, outerScope=None, loop=False) -> None:
+		self.outer_scope = outerScope
+		self.loop = loop
+		self.symbol_table = dict()
+		self.inner_scopes = []
+	
+	def add_symbol(self, label, type, values, lineno):
+		if not label in self.symbol_table.keys:
+			self.symbol_table[label] = (type, values, lineno)
+		else:
+			lineno_contained = self.symbol_table[label](3)
+			# variable already in scope
+			raise Exception(
+				f"variable {label} declared in line {lineno} already in {lineno_contained}"
+			)
+		
+	def as_dict(self):
+		return pprint.pprint("symbol table: \n"+self.symbol_table)
+
+
+# lista de nodos raiz das EXPA
+syntax_tree_list = []
+# stack de escopos 
+scope_stack = []
 
 def p_program(p):
 	'''
@@ -9,7 +47,8 @@ def p_program(p):
 			| funclist
 			| empty
 	'''
-	p[0] = p[1]
+	pass
+
 
 def p_funclist_funcdef(p):
 	'''
@@ -21,13 +60,13 @@ def p_funclist_recursive(p):
 	'''
 	funclist : funcdef funclist
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_funcdef(p):
 	'''
-	funcdef : def ident '(' paramlist ')' '{' statelist '}'
+	funcdef : def ident '(' paramlist ')' new_scope '{' statelist '}'
 	'''
-	p[0] = ' '.join(p[1:])
+	
 
 # New rule for passing arrays as function parameters
 def p_arr_param(p):
@@ -164,6 +203,7 @@ def p_lvalue(p):
 			| ident arr
 	''' 
 	p[0] = ' '.join(p[1:])
+	p[0] = Node('id', None, None)
 
 # New rule, to solve ([numexpression])* problem
 def p_lvalue_array(p):
@@ -236,16 +276,20 @@ def p_numexpression_recursion(p):
 	numexpression 	: term '+' numexpression
 					| term '-' numexpression
 	'''
-	p[0] = ' '.join(p[1:])
+	p[0] = Node(p[2], p[1], p[3])
 
 def p_term(p):
-	'''
-	term 	: unaryexpression
-			| unaryexpression '*' unaryexpression
-			| unaryexpression '/' unaryexpression
-			| unaryexpression '%' unaryexpression
-	'''
-	p[0] = ' '.join(p[1:])
+    '''
+    term 	: unaryexpression
+    		| unaryexpression '*' unaryexpression
+    		| unaryexpression '/' unaryexpression
+    		| unaryexpression '%' unaryexpression
+    '''
+    if len(p) == 1:
+        p[0] = p[1]
+    else:
+        p[0] = Node(p[2], p[1], p[3])
+
 
 def p_unaryexpression(p):
 	'''
@@ -255,21 +299,24 @@ def p_unaryexpression(p):
 
 def p_unaryexpression_signaled(p):
 	'''
-	unaryexpression : '+' factor
-					| '-' factor
+	unaryexpression : factor '+' factor
+					| factor '-' factor
 	'''
-	p[0] = ' '.join(p[1:])
+	p[0] = Node(p[2], p[1], p[3])
 
 def p_factor(p):
-	'''
-	factor 	: int_constant
+    '''
+    factor 	: int_constant
 			| float_constant
 			| string_constant
 			| null
 			| lvalue
 			| '(' numexpression ')'
 	'''
-	p[0] = ' '.join(p[1:])
+    if p[1] == '(':
+        p[0] = p[2]
+    else:
+        p[0] = p[1]
 
 def p_allocexpression(p):
 	'''
@@ -302,6 +349,20 @@ def p_error(p):
 		print("Syntax error at token '" + p.value + "' at line", p.lineno)
 	else:
 		print("Syntax error at EOF. Please check parselog.txt file to pinpoint the error")
+
+# actions
+def p_new_scope(p: yacc.YaccProduction) -> None:
+    """
+    new_scope :
+    """
+    create_scope(False)
+
+def create_scope(is_loop):
+	top = scope_stack[-1]
+	new = Scope(top, is_loop)
+	if top:
+		top.inner_scopes.append(new)
+	scope_stack.append(new)
 
 # Build yacc's LALR parsing table
 # and save it at parsetab.py
