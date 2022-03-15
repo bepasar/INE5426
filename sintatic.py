@@ -15,6 +15,17 @@ class Node():
 		self.left = left
 		self.right = right
 
+	def as_dict(self):
+		left = None if self.left == None else self.left.as_dict()
+		right = None if self.right == None else self.right.as_dict()
+
+		return {
+			"value": self.label,
+			"right": right,
+			"left": left,
+		}
+
+
 class Scope():
 	def __init__(self, outerScope=None, loop=False) -> None:
 		self.outer_scope = outerScope
@@ -54,7 +65,7 @@ def p_funclist_funcdef(p):
 	'''
 	funclist : funcdef
 	'''
-	p[0] = p[1]
+	pass
 
 def p_funclist_recursive(p):
 	'''
@@ -64,8 +75,9 @@ def p_funclist_recursive(p):
 
 def p_funcdef(p):
 	'''
-	funcdef : def ident '(' paramlist ')' new_scope '{' statelist '}'
+	funcdef : def ident '(' paramlist ')'  '{' statelist '}'
 	'''
+	pass
 	
 
 # New rule for passing arrays as function parameters
@@ -77,7 +89,7 @@ def p_arr_param(p):
 				| arrparam '[' ']'
 				| arrparam ident
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 # New production for 'arr_param'
 def p_paramlist_simple(p):
@@ -88,10 +100,7 @@ def p_paramlist_simple(p):
 				| arrparam
 				| empty 
 	'''
-	if p[1] is None:
-		p[0] = ' ' # empty
-	else:
-		p[0] = ' '.join(p[1:])
+	pass
 
 # New production for 'arr_param'
 def p_paramlist_complex(p):
@@ -101,7 +110,7 @@ def p_paramlist_complex(p):
 				| string ident ',' paramlist
 				| arrparam ',' paramlist
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 # New productions
 # funcall ';' --> enable function calling without return. ex: heapsort(x,y)
@@ -122,10 +131,7 @@ def p_statement_vardecl(p):
 				| break ';'
 				| ';'
 	'''
-	if len(p) == 2:
-		p[0] = p[1]
-	else:
-		p[0] = ' '.join(p[1:])
+	pass
 
 def p_vardecl(p):
 	'''
@@ -135,7 +141,7 @@ def p_vardecl(p):
 			| vardecl '[' int_constant ']'
 			| vardecl '[' ident ']'
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_atribstat(p):
 	'''
@@ -143,19 +149,19 @@ def p_atribstat(p):
 				| lvalue '=' allocexpression
 				| lvalue '=' funcall
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_printstat(p):
 	'''
 	printstat : print expression
 	'''
-	p[0] = p[1] + p[2]
+	pass
 
 def p_readstat(p):
 	'''
 	readstat : read lvalue
 	'''
-	p[0] = p[1] + p[2]
+	pass
 
 # New production to allow return values (ex 'return 2;')
 def p_returnstat(p):
@@ -163,46 +169,45 @@ def p_returnstat(p):
 	returnstat 	: return
 				| return factor
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_ifstat(p):
 	'''
 	ifstat : if '(' expression ')' statement
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_ifstat_else(p):
 	'''
 	ifstat : if '(' expression ')' statement else statement
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_forstat(p):
 	'''
 	forstat : for '(' atribstat ';' expression ';' atribstat ')' statement
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 # New rule for while statement
 def p_whilestat(p):
 	'''
 	whilestat : while '(' expression ')' statement
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_statelist(p):
 	'''
 	statelist 	: statement
 				| statement statelist
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_lvalue(p): 
 	'''
 	lvalue 	: ident
 			| ident arr
 	''' 
-	p[0] = ' '.join(p[1:])
 	p[0] = Node('id', None, None)
 
 # New rule, to solve ([numexpression])* problem
@@ -213,32 +218,37 @@ def p_lvalue_array(p):
 		| arr '[' ']'
 		| arr '[' numexpression ']'
 	'''
-	p[0] = ' '.join(p[1:])
+	if len(p) == 3:
+		return 
+	if p[2] != '[' and p[2] != ']':
+		p[0] = p[2]
+	elif p[3] != ']':
+		p[0] = p[3]
 
 def p_expression(p):
 	'''
 	expression : numexpression
 	'''
-	p[0] = p[1]
+	pass
 
 def p_expression_relop(p):
 	'''
 	expression : numexpression relop numexpression
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 # New rule for boolean expressions
 def p_expression_boolop(p):
 	'''
 	expression : expression boolop expression
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_funcall(p):
 	'''
 	funcall : ident '(' paramlistcall ')' 
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 # Separate rule for single parameters, for better organization
 # New productions: 
@@ -253,23 +263,21 @@ def p_param(p):
 			| string_constant
 			| funcall
 	'''
-	if p[1] is None: # empty
-		p[0] = ' '
-	else:
-		p[0] = ' '.join(p[1:])
+	pass
 		
 def p_paramlistcall(p):
 	'''
 	paramlistcall 	: param
 					| param ',' paramlistcall
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_numexpression_term(p):
 	'''
 	numexpression : term
 	'''
 	p[0] = p[1]
+	syntax_tree_list.append((p[0], p.lineno(1)))
 	
 def p_numexpression_recursion(p):
 	'''
@@ -279,16 +287,16 @@ def p_numexpression_recursion(p):
 	p[0] = Node(p[2], p[1], p[3])
 
 def p_term(p):
-    '''
-    term 	: unaryexpression
-    		| unaryexpression '*' unaryexpression
-    		| unaryexpression '/' unaryexpression
-    		| unaryexpression '%' unaryexpression
-    '''
-    if len(p) == 1:
-        p[0] = p[1]
-    else:
-        p[0] = Node(p[2], p[1], p[3])
+	'''
+	term 	: unaryexpression
+			| unaryexpression '*' unaryexpression
+			| unaryexpression '/' unaryexpression
+			| unaryexpression '%' unaryexpression
+	'''
+	if len(p) == 2:
+		p[0] = p[1]
+	else:
+		p[0] = Node(p[2], p[1], p[3])
 
 
 def p_unaryexpression(p):
@@ -316,7 +324,7 @@ def p_factor(p):
     if p[1] == '(':
         p[0] = p[2]
     else:
-        p[0] = p[1]
+        p[0] = Node(p[1], None, None)
 
 def p_allocexpression(p):
 	'''
@@ -324,19 +332,19 @@ def p_allocexpression(p):
 					| new float '[' numexpression ']' dimensions
 					| new string '[' numexpression ']' dimensions
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_dimensions_empty(p):
 	'''
 	dimensions : empty
 	'''
-	p[0] = ' '
+	pass
 
 def p_dimensions(p):
 	'''
 	dimensions : '[' numexpression ']'
 	'''
-	p[0] = ' '.join(p[1:])
+	pass
 
 def p_empty(p):
 	'''
@@ -351,18 +359,18 @@ def p_error(p):
 		print("Syntax error at EOF. Please check parselog.txt file to pinpoint the error")
 
 # actions
-def p_new_scope(p: yacc.YaccProduction) -> None:
-    """
-    new_scope :
-    """
-    create_scope(False)
+#def p_new_scope(p: yacc.YaccProduction) -> None:
+#    """
+#    new_scope :
+#    """
+    #create_scope(False)
 
-def create_scope(is_loop):
-	top = scope_stack[-1]
-	new = Scope(top, is_loop)
-	if top:
-		top.inner_scopes.append(new)
-	scope_stack.append(new)
+#def create_scope(is_loop):
+	#top = scope_stack[-1]
+	#new = Scope(top, is_loop)
+	#if top:
+	#	top.inner_scopes.append(new)
+	#scope_stack.append(new)
 
 # Build yacc's LALR parsing table
 # and save it at parsetab.py

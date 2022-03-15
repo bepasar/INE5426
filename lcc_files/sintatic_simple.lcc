@@ -1,0 +1,7 @@
+def testeFunc() {
+    add(add(2));
+    if (a >= c + b ) {
+        c = a + 2;
+    }
+    return;
+}
