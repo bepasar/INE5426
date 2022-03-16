@@ -7,8 +7,10 @@ def testeFunc() {
         string g;
         string k;
         g = k + 'u';
+        int x;
         x = 1;
         string b;
+        b = 1 + g + a * c;
     }
     return;
 }

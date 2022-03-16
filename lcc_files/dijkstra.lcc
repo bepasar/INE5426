@@ -10,6 +10,10 @@ def main()
 {
   int Grafo[TAMANHO][TAMANHO];
   int peso;
+  int i;
+  int j;
+  int tam;
+  tam = TAMANHO - 1;
 
   print "Digite o peso da aresta entre os vertices i e j: ";
   for (i = 0; i < tam; i = i + 1)
@@ -22,8 +26,6 @@ def main()
         Grafo[i][j] = peso;
     }
   }
-  int tam;
-  tam = TAMANHO - 1;
   Dijkstra(Grafo, tam, 0);
   return 0;
 }
