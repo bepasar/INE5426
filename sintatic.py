@@ -11,12 +11,14 @@ import pprint
 
 # data structures
 class Node():
-	def __init__(self, value, left, right) -> None:
+
+	def __init__(self, value, left, right, type) -> None:
 		self.value = value
 		self.left = left
 		self.right = right
+		self.type = type
 
-	def as_dict(self):
+	def as_dict(self) -> None:
 		left = None if self.left == None else self.left.as_dict()
 		right = None if self.right == None else self.right.as_dict()
 
@@ -25,6 +27,18 @@ class Node():
 			"right": right,
 			"left": left,
 		}
+	
+	def check_valid(self) -> bool:
+		esq = self.left.type if type(self.left) == Node else self.left
+		dir = self.right.type if type(self.right) == Node else self.right
+
+		if esq == dir:
+			self.type = esq
+			return True
+
+		raise Exception(
+			f"type({esq}) != type({dir}) at {self.value} node"
+		)
 
 class SymbolTable():
 	def __init__(self):
@@ -38,6 +52,15 @@ class SymbolTable():
 			)
 		else:
 			self.table[label] = var
+	
+	def get_type(self, label):
+		if label in self.table:
+			return self.table[label]["datatype"]
+		else:
+			print(f"variable '{label}' not yet declared in the scope")
+			print(self.table)
+		return None
+
 
 class Scope():
 	def __init__(self, outerScope=None, loop=False) -> None:
@@ -160,7 +183,7 @@ def p_vardecl(p):
 			| vardecl '[' int_constant ']'
 			| vardecl '[' ident ']'
 	'''
-	if len(p):
+	if len(p) < 4:
 		symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
 
 
@@ -229,7 +252,7 @@ def p_lvalue(p):
 	lvalue 	: ident
 			| ident arr
 	''' 
-	p[0] = p[1]
+	p[0] = Node(p[1], None, None, symbol_table.get_type(p[1]))
 
 # New rule, to solve ([numexpression])* problem
 def p_lvalue_array(p):
@@ -259,7 +282,7 @@ def p_expression_relop(p):
 	'''
 	expression : numexpression relop numexpression
 	'''
-	p[0] = Node(p[2], p[1], p[3])
+	p[0] = Node(p[2], p[1], p[3], None)
 	syntax_tree_list.append(p[0])
 
 # New rule for boolean expressions
@@ -267,7 +290,7 @@ def p_expression_boolop(p):
 	'''
 	expression : expression boolop expression
 	'''
-	p[0] = Node(p[2], p[1], p[3])
+	p[0] = Node(p[2], p[1], p[3], None)
 	syntax_tree_list.append(p[0])
 
 def p_funcall(p):
@@ -309,7 +332,7 @@ def p_numexpression_recursion(p):
 	numexpression 	: term '+' numexpression
 					| term '-' numexpression
 	'''
-	p[0] = Node(p[2], p[1], p[3])
+	p[0] = Node(p[2], p[1], p[3], None)
 
 def p_term(p):
 	'''
@@ -321,7 +344,8 @@ def p_term(p):
 	if len(p) == 2:
 		p[0] = p[1]
 	else:
-		p[0] = Node(p[2], p[1], p[3])
+		p[0] = Node(p[2], p[1], p[3], None)
+		p[0].check_valid()
 
 
 def p_unaryexpression(p):
@@ -335,21 +359,37 @@ def p_unaryexpression_signaled(p):
 	unaryexpression : factor '+' factor
 					| factor '-' factor
 	'''
-	p[0] = Node(p[2], p[1], p[3])
+	p[0] = Node(p[2], p[1], p[3], None)
+	p[0].check_valid()
 
 def p_factor(p):
     '''
-    factor 	: int_constant
-			| float_constant
-			| string_constant
-			| null
+    factor 	: null
 			| lvalue
 			| '(' numexpression ')'
 	'''
     if p[1] == '(':
         p[0] = p[2]
     else:
-        p[0] = Node(p[1], None, None)
+        p[0] = p[1]
+
+def p_factor_int(p):
+	'''
+	factor 	: int_constant
+	'''
+	p[0] = Node(p[1], None, None, 'int')
+
+def p_factor_float(p):
+	'''
+	factor 	: float_constant
+	'''
+	p[0] = Node(p[1], None, None, 'float')
+
+def p_factor_string(p):
+	'''
+	factor 	: string_constant
+	'''
+	p[0] = Node(p[1], None, None, 'string')
 
 def p_allocexpression(p):
 	'''
