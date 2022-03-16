@@ -10,8 +10,8 @@ import pprint
 
 # data structures
 class Node():
-	def __init__(self, label, left, right) -> None:
-		self.label = label
+	def __init__(self, value, left, right) -> None:
+		self.value = value
 		self.left = left
 		self.right = right
 
@@ -20,7 +20,7 @@ class Node():
 		right = None if self.right == None else self.right.as_dict()
 
 		return {
-			"value": self.label,
+			"value": self.value,
 			"right": right,
 			"left": left,
 		}
@@ -324,7 +324,7 @@ def p_factor(p):
     if p[1] == '(':
         p[0] = p[2]
     else:
-        p[0] = Node(p[1].label, None, None)
+        p[0] = Node(p[1].value, None, None)
 
 def p_allocexpression(p):
 	'''
