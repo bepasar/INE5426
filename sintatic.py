@@ -208,7 +208,7 @@ def p_lvalue(p):
 	lvalue 	: ident
 			| ident arr
 	''' 
-	p[0] = Node('id', None, None)
+	p[0] = Node(p[1], None, None)
 
 # New rule, to solve ([numexpression])* problem
 def p_lvalue_array(p):
@@ -324,7 +324,7 @@ def p_factor(p):
     if p[1] == '(':
         p[0] = p[2]
     else:
-        p[0] = Node(p[1], None, None)
+        p[0] = Node(p[1].label, None, None)
 
 def p_allocexpression(p):
 	'''
