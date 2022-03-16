@@ -3,6 +3,8 @@ def testeFunc() {
         c = 1 + 2 * 3 + 9 - 11 % 2;
         d = a - 4 + c;
         x = 1;
+        int k;
+        string b;
     }
     return;
 }

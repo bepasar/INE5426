@@ -26,6 +26,18 @@ class Node():
 			"left": left,
 		}
 
+class SymbolTable():
+	def __init__(self):
+		self.table = {}
+	
+	def insert_into(self, var: dict, label: str):
+		if label in self.table:
+			datatype = self.table[label]["datatype"]
+			raise Exception(
+				f"variable {label} already declared (as {datatype} type)"
+			)
+		else:
+			self.table[label] = var
 
 class Scope():
 	def __init__(self, outerScope=None, loop=False) -> None:
@@ -53,6 +65,9 @@ syntax_tree_list = []
 # stack de escopos 
 scope_stack = []
 
+# tabela de simbolos
+symbol_table = SymbolTable()
+
 def p_program(p):
 	'''
 	program : statement
@@ -78,7 +93,7 @@ def p_funcdef(p):
 	'''
 	funcdef : def ident '(' paramlist ')'  '{' statelist '}'
 	'''
-	pass
+	symbol_table.insert_into({"datatype": "function", "values":[]}, p[2])
 	
 
 # New rule for passing arrays as function parameters
@@ -101,7 +116,9 @@ def p_paramlist_simple(p):
 				| arrparam
 				| empty 
 	'''
-	pass
+	if len(p) == 3:
+		symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
+
 
 # New production for 'arr_param'
 def p_paramlist_complex(p):
@@ -111,7 +128,8 @@ def p_paramlist_complex(p):
 				| string ident ',' paramlist
 				| arrparam ',' paramlist
 	'''
-	pass
+	if len(p) == 5:
+		symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
 
 # New productions
 # funcall ';' --> enable function calling without return. ex: heapsort(x,y)
@@ -142,7 +160,9 @@ def p_vardecl(p):
 			| vardecl '[' int_constant ']'
 			| vardecl '[' ident ']'
 	'''
-	pass
+	if len(p):
+		symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
+
 
 def p_atribstat(p):
 	'''

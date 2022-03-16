@@ -46,6 +46,11 @@ def main():
             for i, node in enumerate(sintatic.syntax_tree_list):
                 print('\nExpression tree %d' % (i+1))
                 print_tree(node)
-            
+
+        a = input('Show symbol table? \n\t y/n: ')
+        if a == 'y':
+            pprint(sintatic.symbol_table.table)
+
+
 if __name__ == '__main__':
     main()
