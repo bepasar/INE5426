@@ -41,9 +41,6 @@ class Lexer(object):
 			# Get next token
 			tok = self.lexer.token()
 
-		# if not lexical_error:
-		# 	self.print_symbols_table()
-		# 	self.print_token_list()
 		return lexical_error
 	
 
@@ -71,6 +68,17 @@ class Lexer(object):
 	# Basic regular definitions
 	digit  = r'([0-9])'
 	letter = r'([A-Za-z])'
+
+	# Regular expression rules for non-trivial terminals
+	t_float_constant = digit + r'+\.' + digit + r'+'
+	t_int_constant = digit + r'+'
+	t_string_constant = r'".*" | \'.*\'' # '.' represents any character
+	
+	t_relop = r'<=|>=|!=|==|<|>'
+	t_boolop = r'&&|\|\|' # not '!' operator removed
+
+	# A string containing ignored characters (spaces and tabs)
+	t_ignore  = ' \t'
 
 	# literals (1 character symbols)
 	# the token type/value is the character itself
@@ -102,38 +110,12 @@ class Lexer(object):
 		'int_constant'
 	] + list(reserved.values())
 
-	# Regular expression rules for non-trivial terminals
-	float_constant = digit + r'+\.' + digit + r'+'
-	int_constant = digit + r'+'
-	string_constant = r'".*" | \'.*\'' # '.' represents any character
-	
-	t_relop = r'<=|>=|!=|==|<|>'
-	t_boolop = r'&&|\|\|' # not '!' operator removed
-
-	# A string containing ignored characters (spaces and tabs)
-	t_ignore  = ' \t'
-
 	identifier = r'(' + letter + r'(' + digit + r'|' + letter + r')*)'
 	@lex.TOKEN(identifier)
 	def t_ident(self, t):
 		t.type = self.reserved.get(t.value,'ident')    # Check for reserved words
 		return t
-	
 
-	@lex.TOKEN(float_constant)
-	def t_float_constant(self, t):
-		t.type = self.reserved.get(t.value,'float')    # Check for reserved words
-		return t
-
-	@lex.TOKEN(int_constant)
-	def t_int_constant(self, t):
-		t.type = self.reserved.get(t.value,'string')    # Check for reserved words
-		return t
-
-	@lex.TOKEN(string_constant)
-	def t_string_constant(self, t):
-		t.type = self.reserved.get(t.value,'float')    # Check for reserved words
-		return t
 	# Define a rule so we can track line numbers
 	def t_newline(self, t):
 		r'\n+'

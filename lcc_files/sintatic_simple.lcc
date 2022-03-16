@@ -1,6 +1,8 @@
 def testeFunc() {
-    if (a >= c + b) {
-        c = 1 + 2 + 1;
+    if (a[3] + 3 < 7 * 3) {
+        c = 1 + 2 * 3 + 9 - 11 % 2;
+        d = a - 4 + c;
+        x = 1;
     }
     return;
 }

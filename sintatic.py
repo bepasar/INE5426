@@ -4,7 +4,8 @@ from cProfile import label
 from doctest import OutputChecker
 import logging
 from symtable import Symbol
-from turtle import left
+import sys
+# from turtle import left
 import ply.yacc as yacc
 import pprint
 
@@ -208,7 +209,7 @@ def p_lvalue(p):
 	lvalue 	: ident
 			| ident arr
 	''' 
-	p[0] = Node(p[1], None, None)
+	p[0] = p[1]
 
 # New rule, to solve ([numexpression])* problem
 def p_lvalue_array(p):
@@ -229,20 +230,25 @@ def p_expression(p):
 	'''
 	expression : numexpression
 	'''
-	pass
+	p[0] = p[1]
+	# syntax_tree_list.append((p[0], p.lineno(1)))
+	if p[0].left or p[0].right:  # skip single value expressions like 'x = 4;'
+		syntax_tree_list.append(p[0])
 
 def p_expression_relop(p):
 	'''
 	expression : numexpression relop numexpression
 	'''
-	pass
+	p[0] = Node(p[2], p[1], p[3])
+	syntax_tree_list.append(p[0])
 
 # New rule for boolean expressions
 def p_expression_boolop(p):
 	'''
 	expression : expression boolop expression
 	'''
-	pass
+	p[0] = Node(p[2], p[1], p[3])
+	syntax_tree_list.append(p[0])
 
 def p_funcall(p):
 	'''
@@ -277,7 +283,6 @@ def p_numexpression_term(p):
 	numexpression : term
 	'''
 	p[0] = p[1]
-	syntax_tree_list.append((p[0], p.lineno(1)))
 	
 def p_numexpression_recursion(p):
 	'''
@@ -324,7 +329,7 @@ def p_factor(p):
     if p[1] == '(':
         p[0] = p[2]
     else:
-        p[0] = Node(p[1].value, None, None)
+        p[0] = Node(p[1], None, None)
 
 def p_allocexpression(p):
 	'''
@@ -357,6 +362,7 @@ def p_error(p):
 		print("Syntax error at token '" + p.value + "' at line", p.lineno)
 	else:
 		print("Syntax error at EOF. Please check parselog.txt file to pinpoint the error")
+	sys.exit() # stops the parsing process
 
 # actions
 #def p_new_scope(p: yacc.YaccProduction) -> None:
