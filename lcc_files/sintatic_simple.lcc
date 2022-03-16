@@ -8,7 +8,6 @@ def testeFunc() {
         string k;
         g = k + 'u';
         x = 1;
-        int k;
         string b;
     }
     return;

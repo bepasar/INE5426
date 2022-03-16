@@ -66,19 +66,16 @@ class Scope():
 	def __init__(self, outerScope=None, loop=False) -> None:
 		self.outer_scope = outerScope
 		self.loop = loop
-		self.symbol_table = dict()
+		self.symbol_table = SymbolTable()
 		self.inner_scopes = []
-	
-	def add_symbol(self, label, type, values, lineno):
-		if not label in self.symbol_table.keys:
-			self.symbol_table[label] = (type, values, lineno)
-		else:
-			lineno_contained = self.symbol_table[label](3)
-			# variable already in scope
-			raise Exception(
-				f"variable {label} declared in line {lineno} already in {lineno_contained}"
-			)
 		
+	def exists(self, label) -> bool:
+		if label in self.symbol_table:
+			return True
+		# recursive call to parents	
+		self.outer_scope.exists(label)
+		return False
+
 	def as_dict(self):
 		return pprint.pprint("symbol table: \n"+self.symbol_table)
 
@@ -87,6 +84,8 @@ class Scope():
 syntax_tree_list = []
 # stack de escopos 
 scope_stack = []
+
+max_scopes = 0
 
 # tabela de simbolos
 symbol_table = SymbolTable()
@@ -97,7 +96,10 @@ def p_program(p):
 			| funclist
 			| empty
 	'''
-	pass
+	if len(scope_stack) != 0:
+		raise Exception(
+			f"scope error: check open and closing brackets"
+		)
 
 
 def p_funclist_funcdef(p):
@@ -114,10 +116,23 @@ def p_funclist_recursive(p):
 
 def p_funcdef(p):
 	'''
-	funcdef : def ident '(' paramlist ')'  '{' statelist '}'
+	funcdef : def ident '(' paramlist ')' open_scope '{' statelist '}' close_scope
 	'''
 	symbol_table.insert_into({"datatype": "function", "values":[]}, p[2])
 	
+def p_open_scope(p):
+	'''
+	open_scope : 
+	'''
+	scope_stack.append(Scope())
+	global max_scopes
+	max_scopes = max_scopes + 1
+
+def p_close_scope(p):
+	'''
+	close_scope : 
+	'''
+	scope_stack.pop()
 
 # New rule for passing arrays as function parameters
 def p_arr_param(p):
@@ -169,7 +184,7 @@ def p_statement_vardecl(p):
 				| ifstat
 				| forstat
 				| whilestat
-				| '{' statelist '}' 
+				| open_scope '{' statelist '}' close_scope
 				| break ';'
 				| ';'
 	'''

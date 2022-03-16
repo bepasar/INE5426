@@ -51,6 +51,9 @@ def main():
         if a == 'y':
             pprint(sintatic.symbol_table.table)
 
+        a = input('Show max scopes? \n\t y/n: ')
+        if a == 'y':
+            print(sintatic.max_scopes)
 
 if __name__ == '__main__':
     main()
