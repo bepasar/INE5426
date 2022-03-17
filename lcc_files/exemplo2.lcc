@@ -1,8 +1,13 @@
-def func1(int A, int B)
+def func1(int A, int B, int C, int D)
 {
   int SM[2][2];
   SM[0][0] = A + B;
   SM[1][1] = B * C;
+  if (A > C)
+  {
+    string B;
+    B = B + 'bob';
+  }
   return SM;
 }
 
@@ -10,9 +15,10 @@ def principal()
 {
   int C;
   int D;
+  string D;
   int R;
   C = 4;
   D = 5;
-  R = func1(C, fx(2), 'abc', 2.5, 54);
+  R = func1(C, fx(2), 2.5, 54);
   return 0;
 }

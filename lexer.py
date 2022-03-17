@@ -4,7 +4,6 @@ import ply.lex as lex
 
 class Lexer(object):
 	def __init__(self, **kwargs):
-		self.symbols_table = dict()
 		self.tokens_list = list()
 		self.lexer = lex.lex(module=self, **kwargs)
 	
@@ -22,26 +21,17 @@ class Lexer(object):
 		while tok:
 			# Lexical error identified
 			if tok.type == 'error':
-				lexical_error = True
-				break
+				raise SystemExit ()
 
 			col = self.find_column(tok)
 
 			# Insert token instance in the tokens list
 			self.tokens_list.append((tok, col))
 
-			# Initialize/update the symbols table
-			if tok.type == 'ident':
-				if tok.value in self.symbols_table:
-					self.symbols_table[tok.value][0] += 1				# token occurrences counter
-					self.symbols_table[tok.value][1].add(tok.lineno)	# set of lines where token is present 
-				else:
-					self.symbols_table[tok.value] = [1, {tok.lineno}]
-
 			# Get next token
 			tok = self.lexer.token()
 
-		return lexical_error
+		self.lexer.lineno = 1
 	
 
 	def print_token_list(self):
@@ -49,19 +39,6 @@ class Lexer(object):
 		print('Line'.ljust(8, ' ') + 'Column'.ljust(10, ' ') + 'Token'.ljust(19, ' ') + 'Lexeme'.ljust(8, ' '))
 		for (tok, col) in self.tokens_list:
 			print('%s%s%s%s' % (str(tok.lineno).ljust(8, ' '), str(col).ljust(10, ' '), tok.type.ljust(19, ' '), tok.value))
-		print("__________________________________________________________________________")
-
-	def print_symbols_table(self):
-		print("_______________________________SYMBOLS TABLE______________________________")
-		print('Identifier'.ljust(20, ' ') + 'Occurrences'.ljust(16, ' ') + 'Lines')
-		for token, attrib in self.symbols_table.items():
-			lines = sorted(attrib[1])
-			print('%s%s' % (token.ljust(20, ' '), str(attrib[0]).ljust(16, ' ')) + str(lines[:10]))
-			i = 10
-			while i < (len(lines)):
-				print(''.ljust(36, ' ') + str(lines[i:i+10]))
-				i += 10
-			print('')
 		print("__________________________________________________________________________")
 
 

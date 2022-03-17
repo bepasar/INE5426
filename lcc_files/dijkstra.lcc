@@ -1,13 +1,11 @@
 // Algoritmo de Dijkstra
 
-def constantes() 
-{
-  int INFINITO; INFINITO = 99999;
-  int TAMANHO; TAMANHO = 10;
-}
-
 def main() 
 {
+  int INFINITO;
+  INFINITO = 99999;
+  int TAMANHO;
+  TAMANHO = 10;
   int Grafo[TAMANHO][TAMANHO];
   int peso;
   int i;

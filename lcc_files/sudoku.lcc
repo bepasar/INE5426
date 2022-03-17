@@ -1,9 +1,4 @@
-def initgrid()
-{
-	int grid;
-	grid = new int[81];
-}
-def checkrow(int row,int num)
+def checkrow(int size, int row, int num)
 {
 	int column;
 	for(column = 0; column < 9; column = column + 1)
@@ -13,7 +8,7 @@ def checkrow(int row,int num)
 	}
 	return 1;
 }
-def checkcolumn(int column,int num)
+def checkcolumn(int size, int column, int num)
 {
 	int row;
 	for(row = 0; row < 9; row = row + 1)
@@ -23,7 +18,7 @@ def checkcolumn(int column,int num)
 	}
 	return 1;
 }
-def checkgrid(int row,int column,int num)
+def checkgrid(int size, int row, int column, int num)
 {
 	row = (row/3)*3;
 	column = (column/3)*3;
@@ -50,7 +45,7 @@ def solve(int row,int column)
 		solvesudoku(row, 0);
 	}
 }
-def display()
+def display(int size)
 {
 	int row;
 	int column;
@@ -64,10 +59,10 @@ def display()
 		print "\n";
 	}
 }
-def solvesudoku(int row, int column)
+def solvesudoku(int row, int column, int size)
 {
 	if(row > 8)
-		display();
+		display(size);
 	if(grid[row][column] != 0)
 		solve(row,column);
 	else
@@ -76,11 +71,11 @@ def solvesudoku(int row, int column)
 		for(counter = 1; counter <= 9; counter = counter + 1)
 		{
 			int ckRow; 
-			ckRow = checkrow(row, ctr);
+			ckRow = checkrow(size, row, ctr);
 			int ckCol; 
-			ckCol = checkcolumn(column, ctr);
+			ckCol = checkcolumn(size, column, ctr);
 			int ckGrid; 
-			ckGrid = checkgrid(row, column, ctr);
+			ckGrid = checkgrid(size, row, column, ctr);
 			if(ckRow == 1 && ckCol == 1 && ckGrid == 1)
 			{
 				grid[row][column] = ctr;
@@ -92,9 +87,13 @@ def solvesudoku(int row, int column)
 }
 def main()
 {
+	int size;
+	size = 9;
 	int row;
 	int column;
 	print "Preencha os espaços com números entre 1-9 ou 0 para desconhecidos";
+	int grid;
+	grid = new int[81];
 
 	int value;
 
@@ -106,5 +105,5 @@ def main()
 			grid[row*size+column] = value;
 		}
 	}
-	solvesudoku(0,0);
+	solvesudoku(0, 0, size);
 }

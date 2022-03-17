@@ -53,3 +53,22 @@ def print_tree(root, value="value", left="left", right="right"):
     lines, *_ = display(root, value, left, right)
     for line in lines:
         print(line)
+
+
+# A function to do inorder tree traversal
+def printInorder(root):
+    if root:
+        # First recur on left child
+        printInorder(root.left)
+        # then print the data of node
+        print(root.value, end=' '),
+        # now recur on right child
+        printInorder(root.right)
+
+
+def printExpressionTree(node, i):
+    print('\nExpression %d:' % (i+1), end=' ')
+    printInorder(node) # prints original expression
+    print('(line %d)' % (node.lineno))
+    print_tree(node)
+    

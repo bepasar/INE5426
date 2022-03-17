@@ -1,11 +1,7 @@
 # Grupo: Bernardo, Klaus e Tiago
 
-from cProfile import label
-from doctest import OutputChecker
 import logging
-from symtable import Symbol
 import sys
-# from turtle import left
 import ply.yacc as yacc
 import pprint
 
@@ -72,13 +68,13 @@ class Scope():
 		self.symbol_table = SymbolTable()
 		self.inner_scopes = []
 		
-	def exists(self, label) -> bool:
+	def exists(self, label) -> int:
 		if label in self.symbol_table.table:
-			return True
+			return self.symbol_table.table[label]["line"]
 		# recursive call to parents	
 		if self.outer_scope:
 			self.outer_scope.exists(label)
-		return False
+		return 0
 
 	def as_dict(self):
 		return pprint.pprint("symbol table: \n"+self.symbol_table)
@@ -109,12 +105,11 @@ scope_list = []
 
 def p_program(p):
 	'''
-	program : statement
-			| funclist
+	program : open_scope statement close_scope
+			| open_scope funclist close_scope
 			| empty
 	'''
-	if len(scope_stack) != 0:
-		raise SystemExit (f"scope error: check open and closing brackets")
+	pass
 
 def p_funclist_funcdef(p):
 	'''
@@ -130,14 +125,14 @@ def p_funclist_recursive(p):
 
 def p_funcdef(p):
 	'''
-	funcdef : def ident '(' paramlist ')' open_scope '{' statelist '}' close_scope
+	funcdef : def ident open_scope '(' paramlist ')' '{' statelist '}' close_scope
 	'''
 	if scope_stack:
 		if not scope_stack[-1].exists(p[2]): 
-			scope_stack[-1].symbol_table.insert_into({"datatype": "function", "values":[]}, p[2])
+			scope_stack[-1].symbol_table.insert_into({"line": p.lineno(2), "datatype": "function", "values":[]}, p[2])
 		else:
-			raise Exception(
-				f"symbol {p[2]} already declared"
+			raise SystemExit(
+				f"Declaration error! Symbol {p[2]} at line {p.lineno(2)} already declared at line {scope_stack[-1].exists(p[2])}"
 			)
 		
 def p_open_scope(p):
@@ -183,8 +178,8 @@ def p_paramlist_simple(p):
 		if not scope_stack[-1].exists(p[2]):
 			scope_stack[-1].symbol_table.insert_into({"line": p.lineno(2), "datatype": p[1], "values":[]}, label=p[2])
 		else:
-			raise Exception(
-				f"symbol {p[2]} already declared"
+			raise SystemExit(
+				f"Declaration error! Symbol {p[2]} at line {p.lineno(2)} already declared at line {scope_stack[-1].exists(p[2])}"
 			)
 
 
@@ -200,8 +195,8 @@ def p_paramlist_complex(p):
 		if not scope_stack[-1].exists(p[2]):
 			scope_stack[-1].symbol_table.insert_into({"line": p.lineno(2), "datatype": p[1], "values":[]}, label=p[2])
 		else:	
-			raise Exception(
-				f"symbol {p[2]} already declared"
+			raise SystemExit(
+				f"Declaration error! Symbol {p[2]} at line {p.lineno(2)} already declared at line {scope_stack[-1].exists(p[2])}"
 			)
 
 
@@ -237,10 +232,10 @@ def p_vardecl(p):
 	if len(p) < 4:
 		if not scope_stack[-1].exists(p[2]):
 			scope_stack[-1].symbol_table.insert_into({"line": p.lineno(2), "datatype": p[1], "values":[]}, label=p[2])
-	else:
-		raise Exception(
-			f"symbol {p[2]} already declared"
-		)
+		else:
+			raise SystemExit(
+				f"Declaration error! Symbol {p[2]} at line {p.lineno(2)} already declared at line {scope_stack[-1].exists(p[2])}"
+			)
 
 
 def p_atribstat(p):
@@ -480,19 +475,6 @@ def p_error(p):
 		print("Syntax error at EOF. Please check parselog.txt file to pinpoint the error")
 	sys.exit() # stops the parsing process
 
-# actions
-#def p_new_scope(p: yacc.YaccProduction) -> None:
-#    """
-#    new_scope :
-#    """
-    #create_scope(False)
-
-#def create_scope(is_loop):
-	#top = scope_stack[-1]
-	#new = Scope(top, is_loop)
-	#if top:
-	#	top.inner_scopes.append(new)
-	#scope_stack.append(new)
 
 # Build yacc's LALR parsing table
 # and save it at parsetab.py
