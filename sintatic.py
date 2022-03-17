@@ -58,7 +58,6 @@ class SymbolTable():
 			return self.table[label]["datatype"]
 		else:
 			print(f"variable '{label}' not yet declared in the scope")
-			print(self.table)
 		return None
 
 
@@ -70,25 +69,39 @@ class Scope():
 		self.inner_scopes = []
 		
 	def exists(self, label) -> bool:
-		if label in self.symbol_table:
+		if label in self.symbol_table.table:
 			return True
 		# recursive call to parents	
-		self.outer_scope.exists(label)
+		if self.outer_scope:
+			self.outer_scope.exists(label)
 		return False
 
 	def as_dict(self):
 		return pprint.pprint("symbol table: \n"+self.symbol_table)
 
+	def get_type_recursively(self, label):
+		if label in self.symbol_table.table:
+			return self.symbol_table.get_type(label)
+		
+		if self.outer_scope: 
+			return self.outer_scope.get_type_recursively(label)
+			
+		return None
+	
+	def add_inner_scopes(self, scope):
+		self.inner_scopes.append(scope)
+		if self.outer_scope:
+			self.outer_scope.add_inner_scopes(scope)
 
-# lista de nodos raiz das EXPA
+# list of EXPA root nodes
 syntax_tree_list = []
-# stack de escopos 
+# scope stack 
 scope_stack = []
 
 max_scopes = 0
 
-# tabela de simbolos
-symbol_table = SymbolTable()
+# store all the used scopes
+scope_list = []
 
 def p_program(p):
 	'''
@@ -118,13 +131,24 @@ def p_funcdef(p):
 	'''
 	funcdef : def ident '(' paramlist ')' open_scope '{' statelist '}' close_scope
 	'''
-	symbol_table.insert_into({"datatype": "function", "values":[]}, p[2])
-	
+	if scope_stack:
+		if not scope_stack[-1].exists(p[2]): 
+			scope_stack[-1].symbol_table.insert_into({"datatype": "function", "values":[]}, p[2])
+		else:
+			raise Exception(
+				f"symbol {p[2]} already declared"
+			)
+		
 def p_open_scope(p):
 	'''
 	open_scope : 
 	'''
-	scope_stack.append(Scope())
+	if len(scope_stack) == 0:
+		scope_stack.append(Scope())
+	else:
+		new_scope = Scope(scope_stack[-1], False)
+		scope_stack.append(new_scope)
+		scope_stack[-1].add_inner_scopes(new_scope)
 	global max_scopes
 	max_scopes = max_scopes + 1
 
@@ -132,7 +156,7 @@ def p_close_scope(p):
 	'''
 	close_scope : 
 	'''
-	scope_stack.pop()
+	scope_list.append(scope_stack.pop())
 
 # New rule for passing arrays as function parameters
 def p_arr_param(p):
@@ -155,8 +179,12 @@ def p_paramlist_simple(p):
 				| empty 
 	'''
 	if len(p) == 3:
-		symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
-
+		if not scope_stack[-1].exists(p[2]):
+			scope_stack[-1].symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
+		else:
+			raise Exception(
+				f"symbol {p[2]} already declared"
+			)
 
 # New production for 'arr_param'
 def p_paramlist_complex(p):
@@ -167,7 +195,12 @@ def p_paramlist_complex(p):
 				| arrparam ',' paramlist
 	'''
 	if len(p) == 5:
-		symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
+		if not scope_stack[-1].exists(p[2]):
+			scope_stack[-1].symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
+		else:	
+			raise Exception(
+				f"symbol {p[2]} already declared"
+			)
 
 # New productions
 # funcall ';' --> enable function calling without return. ex: heapsort(x,y)
@@ -199,8 +232,12 @@ def p_vardecl(p):
 			| vardecl '[' ident ']'
 	'''
 	if len(p) < 4:
-		symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
-
+		if not scope_stack[-1].exists(p[2]):
+			scope_stack[-1].symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
+	else:
+		raise Exception(
+			f"symbol {p[2]} already declared"
+		)
 
 def p_atribstat(p):
 	'''
@@ -267,7 +304,7 @@ def p_lvalue(p):
 	lvalue 	: ident
 			| ident arr
 	''' 
-	p[0] = Node(p[1], None, None, symbol_table.get_type(p[1]))
+	p[0] = Node(p[1], None, None, scope_stack[-1].get_type_recursively(p[1]))
 
 # New rule, to solve ([numexpression])* problem
 def p_lvalue_array(p):

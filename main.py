@@ -47,13 +47,21 @@ def main():
                 print('\nExpression tree %d' % (i+1))
                 print_tree(node)
 
-        a = input('Show symbol table? \n\t y/n: ')
+        a = input('Show the scopes? \n\t y/n: ')
         if a == 'y':
-            pprint(sintatic.symbol_table.table)
-
-        a = input('Show max scopes? \n\t y/n: ')
-        if a == 'y':
-            print(sintatic.max_scopes)
+            for i in range(len(sintatic.scope_list)):
+                print("{:<8} {:<15} {:<20}".format('index','outer_scope','inner_scopes'))
+                formatted_inner_scopes = []
+                for s in sintatic.scope_list[i].inner_scopes:
+                    formatted_inner_scopes.append(sintatic.scope_list.index(s))
+                
+                try:
+                    os = sintatic.scope_list.index(sintatic.scope_list[i].outer_scope)
+                except ValueError:
+                    os = ""
+                print("{:<8} {:<15} {:<20}".format(i, os, str(formatted_inner_scopes)))
+                pprint(sintatic.scope_list[i].symbol_table.table)
+                print()
 
 if __name__ == '__main__':
     main()
