@@ -12,11 +12,12 @@ import pprint
 # data structures
 class Node():
 
-	def __init__(self, value, left, right, type) -> None:
+	def __init__(self, value, left, right, type, line) -> None:
 		self.value = value
 		self.left = left
 		self.right = right
 		self.type = type
+		self.lineno = line
 
 	def as_dict(self) -> None:
 		left = None if self.left == None else self.left.as_dict()
@@ -36,9 +37,11 @@ class Node():
 			self.type = esq
 			return True
 
-		raise Exception(
-			f"type({esq}) != type({dir}) at {self.value} node"
+		raise SystemExit(
+			f"Semantic error at (sub)expression: ´{self.left.value} {self.value} {self.right.value}´ at line {self.lineno}\n"
+			f"Incompatible types of operands {self.left.value}({esq}) and {self.right.value}({dir})"
 		)
+		# sys.exit()
 
 class SymbolTable():
 	def __init__(self):
@@ -47,8 +50,9 @@ class SymbolTable():
 	def insert_into(self, var: dict, label: str):
 		if label in self.table:
 			datatype = self.table[label]["datatype"]
-			raise Exception(
-				f"variable {label} already declared (as {datatype} type)"
+			line = self.table[label]["line"]
+			raise SystemExit(
+				f"variable ´{label}´ already declared (as {datatype} type) at line {line}"
 			)
 		else:
 			self.table[label] = var
@@ -110,10 +114,7 @@ def p_program(p):
 			| empty
 	'''
 	if len(scope_stack) != 0:
-		raise Exception(
-			f"scope error: check open and closing brackets"
-		)
-
+		raise SystemExit (f"scope error: check open and closing brackets")
 
 def p_funclist_funcdef(p):
 	'''
@@ -180,11 +181,12 @@ def p_paramlist_simple(p):
 	'''
 	if len(p) == 3:
 		if not scope_stack[-1].exists(p[2]):
-			scope_stack[-1].symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
+			scope_stack[-1].symbol_table.insert_into({"line": p.lineno(2), "datatype": p[1], "values":[]}, label=p[2])
 		else:
 			raise Exception(
 				f"symbol {p[2]} already declared"
 			)
+
 
 # New production for 'arr_param'
 def p_paramlist_complex(p):
@@ -196,11 +198,12 @@ def p_paramlist_complex(p):
 	'''
 	if len(p) == 5:
 		if not scope_stack[-1].exists(p[2]):
-			scope_stack[-1].symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
+			scope_stack[-1].symbol_table.insert_into({"line": p.lineno(2), "datatype": p[1], "values":[]}, label=p[2])
 		else:	
 			raise Exception(
 				f"symbol {p[2]} already declared"
 			)
+
 
 # New productions
 # funcall ';' --> enable function calling without return. ex: heapsort(x,y)
@@ -233,11 +236,12 @@ def p_vardecl(p):
 	'''
 	if len(p) < 4:
 		if not scope_stack[-1].exists(p[2]):
-			scope_stack[-1].symbol_table.insert_into({"datatype": p[1], "values":[]}, label=p[2])
+			scope_stack[-1].symbol_table.insert_into({"line": p.lineno(2), "datatype": p[1], "values":[]}, label=p[2])
 	else:
 		raise Exception(
 			f"symbol {p[2]} already declared"
 		)
+
 
 def p_atribstat(p):
 	'''
@@ -304,7 +308,7 @@ def p_lvalue(p):
 	lvalue 	: ident
 			| ident arr
 	''' 
-	p[0] = Node(p[1], None, None, scope_stack[-1].get_type_recursively(p[1]))
+	p[0] = Node(p[1], None, None, scope_stack[-1].get_type_recursively(p[1]), p.lineno(1))
 
 # New rule, to solve ([numexpression])* problem
 def p_lvalue_array(p):
@@ -334,7 +338,7 @@ def p_expression_relop(p):
 	'''
 	expression : numexpression relop numexpression
 	'''
-	p[0] = Node(p[2], p[1], p[3], None)
+	p[0] = Node(p[2], p[1], p[3], None, p.lineno(2))
 	syntax_tree_list.append(p[0])
 
 # New rule for boolean expressions
@@ -342,7 +346,7 @@ def p_expression_boolop(p):
 	'''
 	expression : expression boolop expression
 	'''
-	p[0] = Node(p[2], p[1], p[3], None)
+	p[0] = Node(p[2], p[1], p[3], None, p.lineno(2))
 	syntax_tree_list.append(p[0])
 
 def p_funcall(p):
@@ -384,7 +388,7 @@ def p_numexpression_recursion(p):
 	numexpression 	: term '+' numexpression
 					| term '-' numexpression
 	'''
-	p[0] = Node(p[2], p[1], p[3], None)
+	p[0] = Node(p[2], p[1], p[3], None, p.lineno(2))
 
 def p_term(p):
 	'''
@@ -396,7 +400,7 @@ def p_term(p):
 	if len(p) == 2:
 		p[0] = p[1]
 	else:
-		p[0] = Node(p[2], p[1], p[3], None)
+		p[0] = Node(p[2], p[1], p[3], None, p.lineno(2))
 		p[0].check_valid()
 
 
@@ -411,7 +415,7 @@ def p_unaryexpression_signaled(p):
 	unaryexpression : factor '+' factor
 					| factor '-' factor
 	'''
-	p[0] = Node(p[2], p[1], p[3], None)
+	p[0] = Node(p[2], p[1], p[3], None, p.lineno(2))
 	p[0].check_valid()
 
 def p_factor(p):
@@ -429,19 +433,19 @@ def p_factor_int(p):
 	'''
 	factor 	: int_constant
 	'''
-	p[0] = Node(p[1], None, None, 'int')
+	p[0] = Node(p[1], None, None, 'int', p.lineno(1))
 
 def p_factor_float(p):
 	'''
 	factor 	: float_constant
 	'''
-	p[0] = Node(p[1], None, None, 'float')
+	p[0] = Node(p[1], None, None, 'float', p.lineno(1))
 
 def p_factor_string(p):
 	'''
 	factor 	: string_constant
 	'''
-	p[0] = Node(p[1], None, None, 'string')
+	p[0] = Node(p[1], None, None, 'string', p.lineno(1))
 
 def p_allocexpression(p):
 	'''
@@ -506,4 +510,4 @@ logging.basicConfig(
 
 # Parse code from a file
 def run(parser, file):
-	return parser.parse(input=file, debug=logging.getLogger())
+	return parser.parse(input=file, debug=logging.getLogger(), tracking=True)
