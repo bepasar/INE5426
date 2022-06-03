@@ -4,18 +4,22 @@ from cProfile import label
 from doctest import OutputChecker
 import logging
 from symtable import Symbol
-from turtle import left
+import sys
+# from turtle import left
 import ply.yacc as yacc
 import pprint
 
 # data structures
 class Node():
-	def __init__(self, value, left, right) -> None:
+
+	def __init__(self, value, left, right, type, line) -> None:
 		self.value = value
 		self.left = left
 		self.right = right
+		self.type = type
+		self.lineno = line
 
-	def as_dict(self):
+	def as_dict(self) -> None:
 		left = None if self.left == None else self.left.as_dict()
 		right = None if self.right == None else self.right.as_dict()
 
@@ -24,33 +28,84 @@ class Node():
 			"right": right,
 			"left": left,
 		}
+	
+	def check_valid(self) -> bool:
+		esq = self.left.type if type(self.left) == Node else self.left
+		dir = self.right.type if type(self.right) == Node else self.right
+
+		if esq == dir:
+			self.type = esq
+			return True
+
+		raise SystemExit(
+			f"Semantic error at (sub)expression: ´{self.left.value} {self.value} {self.right.value}´ at line {self.lineno}\n"
+			f"Incompatible types of operands {self.left.value}({esq}) and {self.right.value}({dir})"
+		)
+		# sys.exit()
+
+class SymbolTable():
+	def __init__(self):
+		self.table = {}
+	
+	def insert_into(self, var: dict, label: str):
+		if label in self.table:
+			datatype = self.table[label]["datatype"]
+			line = self.table[label]["line"]
+			raise SystemExit(
+				f"variable ´{label}´ already declared (as {datatype} type) at line {line}"
+			)
+		else:
+			self.table[label] = var
+	
+	def get_type(self, label):
+		if label in self.table:
+			return self.table[label]["datatype"]
+		else:
+			print(f"variable '{label}' not yet declared in the scope")
+		return None
 
 
 class Scope():
 	def __init__(self, outerScope=None, loop=False) -> None:
 		self.outer_scope = outerScope
 		self.loop = loop
-		self.symbol_table = dict()
+		self.symbol_table = SymbolTable()
 		self.inner_scopes = []
-	
-	def add_symbol(self, label, type, values, lineno):
-		if not label in self.symbol_table.keys:
-			self.symbol_table[label] = (type, values, lineno)
-		else:
-			lineno_contained = self.symbol_table[label](3)
-			# variable already in scope
-			raise Exception(
-				f"variable {label} declared in line {lineno} already in {lineno_contained}"
-			)
 		
+	def exists(self, label) -> bool:
+		if label in self.symbol_table.table:
+			return True
+		# recursive call to parents	
+		if self.outer_scope:
+			self.outer_scope.exists(label)
+		return False
+
 	def as_dict(self):
 		return pprint.pprint("symbol table: \n"+self.symbol_table)
 
+	def get_type_recursively(self, label):
+		if label in self.symbol_table.table:
+			return self.symbol_table.get_type(label)
+		
+		if self.outer_scope: 
+			return self.outer_scope.get_type_recursively(label)
+			
+		return None
+	
+	def add_inner_scopes(self, scope):
+		self.inner_scopes.append(scope)
+		if self.outer_scope:
+			self.outer_scope.add_inner_scopes(scope)
 
-# lista de nodos raiz das EXPA
+# list of EXPA root nodes
 syntax_tree_list = []
-# stack de escopos 
+# scope stack 
 scope_stack = []
+
+max_scopes = 0
+
+# store all the used scopes
+scope_list = []
 
 def p_program(p):
 	'''
@@ -58,8 +113,8 @@ def p_program(p):
 			| funclist
 			| empty
 	'''
-	pass
-
+	if len(scope_stack) != 0:
+		raise SystemExit (f"scope error: check open and closing brackets")
 
 def p_funclist_funcdef(p):
 	'''
@@ -75,10 +130,34 @@ def p_funclist_recursive(p):
 
 def p_funcdef(p):
 	'''
-	funcdef : def ident '(' paramlist ')'  '{' statelist '}'
+	funcdef : def ident '(' paramlist ')' open_scope '{' statelist '}' close_scope
 	'''
-	pass
-	
+	if scope_stack:
+		if not scope_stack[-1].exists(p[2]): 
+			scope_stack[-1].symbol_table.insert_into({"datatype": "function", "values":[]}, p[2])
+		else:
+			raise Exception(
+				f"symbol {p[2]} already declared"
+			)
+		
+def p_open_scope(p):
+	'''
+	open_scope : 
+	'''
+	if len(scope_stack) == 0:
+		scope_stack.append(Scope())
+	else:
+		new_scope = Scope(scope_stack[-1], False)
+		scope_stack.append(new_scope)
+		scope_stack[-1].add_inner_scopes(new_scope)
+	global max_scopes
+	max_scopes = max_scopes + 1
+
+def p_close_scope(p):
+	'''
+	close_scope : 
+	'''
+	scope_list.append(scope_stack.pop())
 
 # New rule for passing arrays as function parameters
 def p_arr_param(p):
@@ -100,7 +179,14 @@ def p_paramlist_simple(p):
 				| arrparam
 				| empty 
 	'''
-	pass
+	if len(p) == 3:
+		if not scope_stack[-1].exists(p[2]):
+			scope_stack[-1].symbol_table.insert_into({"line": p.lineno(2), "datatype": p[1], "values":[]}, label=p[2])
+		else:
+			raise Exception(
+				f"symbol {p[2]} already declared"
+			)
+
 
 # New production for 'arr_param'
 def p_paramlist_complex(p):
@@ -110,7 +196,14 @@ def p_paramlist_complex(p):
 				| string ident ',' paramlist
 				| arrparam ',' paramlist
 	'''
-	pass
+	if len(p) == 5:
+		if not scope_stack[-1].exists(p[2]):
+			scope_stack[-1].symbol_table.insert_into({"line": p.lineno(2), "datatype": p[1], "values":[]}, label=p[2])
+		else:	
+			raise Exception(
+				f"symbol {p[2]} already declared"
+			)
+
 
 # New productions
 # funcall ';' --> enable function calling without return. ex: heapsort(x,y)
@@ -127,7 +220,7 @@ def p_statement_vardecl(p):
 				| ifstat
 				| forstat
 				| whilestat
-				| '{' statelist '}' 
+				| open_scope '{' statelist '}' close_scope
 				| break ';'
 				| ';'
 	'''
@@ -141,7 +234,14 @@ def p_vardecl(p):
 			| vardecl '[' int_constant ']'
 			| vardecl '[' ident ']'
 	'''
-	pass
+	if len(p) < 4:
+		if not scope_stack[-1].exists(p[2]):
+			scope_stack[-1].symbol_table.insert_into({"line": p.lineno(2), "datatype": p[1], "values":[]}, label=p[2])
+	else:
+		raise Exception(
+			f"symbol {p[2]} already declared"
+		)
+
 
 def p_atribstat(p):
 	'''
@@ -208,7 +308,7 @@ def p_lvalue(p):
 	lvalue 	: ident
 			| ident arr
 	''' 
-	p[0] = Node(p[1], None, None)
+	p[0] = Node(p[1], None, None, scope_stack[-1].get_type_recursively(p[1]), p.lineno(1))
 
 # New rule, to solve ([numexpression])* problem
 def p_lvalue_array(p):
@@ -229,20 +329,25 @@ def p_expression(p):
 	'''
 	expression : numexpression
 	'''
-	pass
+	p[0] = p[1]
+	# syntax_tree_list.append((p[0], p.lineno(1)))
+	if p[0].left or p[0].right:  # skip single value expressions like 'x = 4;'
+		syntax_tree_list.append(p[0])
 
 def p_expression_relop(p):
 	'''
 	expression : numexpression relop numexpression
 	'''
-	pass
+	p[0] = Node(p[2], p[1], p[3], None, p.lineno(2))
+	syntax_tree_list.append(p[0])
 
 # New rule for boolean expressions
 def p_expression_boolop(p):
 	'''
 	expression : expression boolop expression
 	'''
-	pass
+	p[0] = Node(p[2], p[1], p[3], None, p.lineno(2))
+	syntax_tree_list.append(p[0])
 
 def p_funcall(p):
 	'''
@@ -277,14 +382,13 @@ def p_numexpression_term(p):
 	numexpression : term
 	'''
 	p[0] = p[1]
-	syntax_tree_list.append((p[0], p.lineno(1)))
 	
 def p_numexpression_recursion(p):
 	'''
 	numexpression 	: term '+' numexpression
 					| term '-' numexpression
 	'''
-	p[0] = Node(p[2], p[1], p[3])
+	p[0] = Node(p[2], p[1], p[3], None, p.lineno(2))
 
 def p_term(p):
 	'''
@@ -296,7 +400,8 @@ def p_term(p):
 	if len(p) == 2:
 		p[0] = p[1]
 	else:
-		p[0] = Node(p[2], p[1], p[3])
+		p[0] = Node(p[2], p[1], p[3], None, p.lineno(2))
+		p[0].check_valid()
 
 
 def p_unaryexpression(p):
@@ -310,21 +415,37 @@ def p_unaryexpression_signaled(p):
 	unaryexpression : factor '+' factor
 					| factor '-' factor
 	'''
-	p[0] = Node(p[2], p[1], p[3])
+	p[0] = Node(p[2], p[1], p[3], None, p.lineno(2))
+	p[0].check_valid()
 
 def p_factor(p):
     '''
-    factor 	: int_constant
-			| float_constant
-			| string_constant
-			| null
+    factor 	: null
 			| lvalue
 			| '(' numexpression ')'
 	'''
     if p[1] == '(':
         p[0] = p[2]
     else:
-        p[0] = Node(p[1].value, None, None)
+        p[0] = p[1]
+
+def p_factor_int(p):
+	'''
+	factor 	: int_constant
+	'''
+	p[0] = Node(p[1], None, None, 'int', p.lineno(1))
+
+def p_factor_float(p):
+	'''
+	factor 	: float_constant
+	'''
+	p[0] = Node(p[1], None, None, 'float', p.lineno(1))
+
+def p_factor_string(p):
+	'''
+	factor 	: string_constant
+	'''
+	p[0] = Node(p[1], None, None, 'string', p.lineno(1))
 
 def p_allocexpression(p):
 	'''
@@ -357,6 +478,7 @@ def p_error(p):
 		print("Syntax error at token '" + p.value + "' at line", p.lineno)
 	else:
 		print("Syntax error at EOF. Please check parselog.txt file to pinpoint the error")
+	sys.exit() # stops the parsing process
 
 # actions
 #def p_new_scope(p: yacc.YaccProduction) -> None:
@@ -388,4 +510,4 @@ logging.basicConfig(
 
 # Parse code from a file
 def run(parser, file):
-	return parser.parse(input=file, debug=logging.getLogger())
+	return parser.parse(input=file, debug=logging.getLogger(), tracking=True)

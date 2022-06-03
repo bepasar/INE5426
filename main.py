@@ -4,6 +4,7 @@ import sys
 import sintatic
 from pprint import pprint
 from lexer import Lexer
+from print_tree import print_tree
 
 def print_expressions(expressions):
     exp_dict = []
@@ -28,19 +29,39 @@ def main():
     lex_error = lex.run(f_contents)
 
     if not lex_error:
-        print('Lexical SUCCESS! No lexical errors were found!')
+        print('Lexical SUCCESS! No lexical errors were found!\n')
+        # a = input('Show symbols table and tokens list? \n\t y/n: ')
+        # if a == 'y':
+        #     lex.print_symbols_table()
+        #     lex.print_token_list()
+
         lex.lexer.lineno = 1 # restart line counter after lexical analysis
 
         # Execute the parsing
         parsing_result = sintatic.run(parser, f_contents)
-        print(type(parsing_result))
-        print(type(f_contents))
-        #print(parsing_result[-1], f_contents[-1])
-        if parsing_result is not None and parsing_result[-1] == f_contents[-1]: # TODO: ver uma forma melhor de validar esse teste
-            print('Parsing SUCCESS! No syntax errors were found!')
-        print_expressions(sintatic.syntax_tree_list)
-            
-        #print(sintatic.syntax_tree_list)
-            
+        print('Parsing SUCCESS! No syntax errors were found!\n')
+        
+        a = input('Show expression trees? \n\t y/n: ')
+        if a == 'y':
+            for i, node in enumerate(sintatic.syntax_tree_list):
+                print('\nExpression tree %d' % (i+1))
+                print_tree(node)
+
+        a = input('Show the scopes? \n\t y/n: ')
+        if a == 'y':
+            for i in range(len(sintatic.scope_list)):
+                print("{:<8} {:<15} {:<20}".format('index','outer_scope','inner_scopes'))
+                formatted_inner_scopes = []
+                for s in sintatic.scope_list[i].inner_scopes:
+                    formatted_inner_scopes.append(sintatic.scope_list.index(s))
+                
+                try:
+                    os = sintatic.scope_list.index(sintatic.scope_list[i].outer_scope)
+                except ValueError:
+                    os = ""
+                print("{:<8} {:<15} {:<20}".format(i, os, str(formatted_inner_scopes)))
+                pprint(sintatic.scope_list[i].symbol_table.table)
+                print()
+
 if __name__ == '__main__':
     main()
